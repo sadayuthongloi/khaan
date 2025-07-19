@@ -1,4 +1,587 @@
+"""
+HTML Generator
+สร้างไฟล์ HTML สำหรับ interface ของแอปพลิเคชัน
+"""
 
+import os
+
+
+class HTMLGenerator:
+    """สร้างไฟล์ HTML สำหรับ interface"""
+    
+    def __init__(self, html_dir: str = 'html'):
+        self.html_dir = html_dir
+        self._ensure_html_directory()
+    
+    def _ensure_html_directory(self):
+        """สร้างโฟลเดอร์ html ถ้ายังไม่มี"""
+        if not os.path.exists(self.html_dir):
+            os.makedirs(self.html_dir)
+    
+    def generate_index_html(self):
+        """สร้างไฟล์ index.html"""
+        html_content = self._get_index_html_content()
+        self._write_html_file('index.html', html_content)
+    
+    def generate_main_html(self):
+        """สร้างไฟล์ main.html"""
+        html_content = self._get_main_html_content()
+        self._write_html_file('main.html', html_content)
+    
+    def _write_html_file(self, filename: str, content: str):
+        """เขียนไฟล์ HTML"""
+        filepath = os.path.join(self.html_dir, filename)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+    
+    def _get_index_html_content(self) -> str:
+        """สร้างเนื้อหา index.html"""
+        return """
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Connection Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .connections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .connection-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .connection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .connection-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .connection-details {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .connection-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .test-result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .test-result-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .test-result-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .test-result-message {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            white-space: pre-line;
+        }
+        
+        .test-result-success {
+            color: #28a745;
+        }
+        
+        .test-result-error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MongoDB Connection Manager</h1>
+            <p>จัดการการเชื่อมต่อฐานข้อมูล MongoDB ของคุณ</p>
+        </div>
+        
+        <div class="content">
+            <!-- แสดง Connections ที่มีอยู่ -->
+            <div class="section">
+                <h2>การเชื่อมต่อที่มีอยู่</h2>
+                <div id="connections-container" class="connections-grid">
+                    <!-- Connections จะถูกแสดงที่นี่ -->
+                </div>
+                <button class="btn btn-primary" onclick="showNewConnectionForm()">
+                    + สร้างการเชื่อมต่อใหม่
+                </button>
+            </div>
+            
+            <!-- Form สำหรับสร้าง Connection ใหม่ -->
+            <div id="new-connection-form" class="section hidden">
+                <h2>สร้างการเชื่อมต่อใหม่</h2>
+                <div id="form-alert"></div>
+                <form id="connection-form">
+                    <div class="form-group">
+                        <label for="connection-name">ชื่อการเชื่อมต่อ *</label>
+                        <input type="text" id="connection-name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="connection-host">Host *</label>
+                            <input type="text" id="connection-host" value="localhost" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="connection-port">Port *</label>
+                            <input type="number" id="connection-port" value="27017" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="connection-database">ชื่อฐานข้อมูล *</label>
+                        <input type="text" id="connection-database" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="connection-username">ชื่อผู้ใช้ (ไม่บังคับ)</label>
+                            <input type="text" id="connection-username">
+                        </div>
+                        <div class="form-group">
+                            <label for="connection-password">รหัสผ่าน (ไม่บังคับ)</label>
+                            <input type="password" id="connection-password">
+                        </div>
+                    </div>
+                    
+                    <div class="connection-actions">
+                        <button type="submit" class="btn btn-success">บันทึกการเชื่อมต่อ</button>
+                        <button type="button" class="btn btn-danger" onclick="hideNewConnectionForm()">ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="/eel.js"></script>
+    <script>
+        // โหลด connections เมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConnections();
+        });
+        
+        // โหลดและแสดง connections
+        async function loadConnections() {
+            try {
+                const connections = await eel.get_connections()();
+                displayConnections(connections);
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการโหลด connections:', error);
+            }
+        }
+        
+        // แสดง connections ในหน้าเว็บ
+        function displayConnections(connections) {
+            const container = document.getElementById('connections-container');
+            
+            if (connections.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666;">ยังไม่มีการเชื่อมต่อใดๆ</p>';
+                return;
+            }
+            
+            container.innerHTML = connections.map(conn => `
+                <div class="connection-card">
+                    <div class="connection-name">${conn.name}</div>
+                    <div class="connection-details">
+                        <div><strong>Host:</strong> ${conn.host}:${conn.port}</div>
+                        <div><strong>Database:</strong> ${conn.database}</div>
+                        ${conn.username ? `<div><strong>Username:</strong> ${conn.username}</div>` : ''}
+                    </div>
+                    <div class="connection-actions">
+                        <button class="btn btn-success" onclick="testConnection('${conn.name}')">ทดสอบ</button>
+                        <button class="btn btn-primary" onclick="useConnection('${conn.name}')">เข้าใช้งาน</button>
+                        <button class="btn btn-danger" onclick="deleteConnection('${conn.name}')">ลบ</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // แสดง form สำหรับสร้าง connection ใหม่
+        function showNewConnectionForm() {
+            document.getElementById('new-connection-form').classList.remove('hidden');
+            document.getElementById('form-alert').innerHTML = '';
+        }
+        
+        // ซ่อน form สำหรับสร้าง connection ใหม่
+        function hideNewConnectionForm() {
+            document.getElementById('new-connection-form').classList.add('hidden');
+            document.getElementById('connection-form').reset();
+        }
+        
+        // จัดการการส่ง form
+        document.getElementById('connection-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('connection-name').value,
+                host: document.getElementById('connection-host').value,
+                port: parseInt(document.getElementById('connection-port').value),
+                database: document.getElementById('connection-database').value,
+                username: document.getElementById('connection-username').value,
+                password: document.getElementById('connection-password').value
+            };
+            
+            try {
+                const result = await eel.add_new_connection(
+                    formData.name,
+                    formData.host,
+                    formData.port,
+                    formData.database,
+                    formData.username,
+                    formData.password
+                )();
+                
+                showAlert(result.message, result.success ? 'success' : 'danger');
+                
+                if (result.success) {
+                    hideNewConnectionForm();
+                    loadConnections();
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการบันทึก', 'danger');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        });
+        
+        // ลบ connection
+        async function deleteConnection(name) {
+            if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบการเชื่อมต่อ "${name}"?`)) {
+                return;
+            }
+            
+            try {
+                const result = await eel.delete_connection(name)();
+                showAlert(result.message, result.success ? 'success' : 'danger');
+                
+                if (result.success) {
+                    loadConnections();
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการลบ', 'danger');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+        
+        // ทดสอบ connection
+        async function testConnection(name) {
+            try {
+                // แสดง loading state
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '🔄 กำลังทดสอบ...';
+                button.disabled = true;
+                button.classList.add('loading');
+                
+                const result = await eel.test_connection(name)();
+                
+                // คืนค่าเดิมของปุ่ม
+                button.textContent = originalText;
+                button.disabled = false;
+                button.classList.remove('loading');
+                
+                // แสดงผลลัพธ์
+                showTestResult(result.message, result.success);
+            } catch (error) {
+                // คืนค่าเดิมของปุ่มในกรณีเกิดข้อผิดพลาด
+                const button = event.target;
+                button.textContent = 'ทดสอบ';
+                button.disabled = false;
+                button.classList.remove('loading');
+                
+                showTestResult('❌ เกิดข้อผิดพลาดในการทดสอบ', false);
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+        
+        // ใช้ connection และไปยังหน้า main
+        async function useConnection(name) {
+            try {
+                const result = await eel.use_connection(name)();
+                
+                if (result.success) {
+                    // เก็บข้อมูล connection ใน sessionStorage
+                    sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
+                    sessionStorage.setItem('databaseExists', result.database_exists);
+                    
+                    // ไปยังหน้า main
+                    window.location.href = 'main.html';
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+        
+        // แสดง alert
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('form-alert');
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            
+            // ลบ alert หลังจาก 5 วินาที
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+        
+        // แสดงผลลัพธ์การทดสอบในรูปแบบ modal
+        function showTestResult(message, isSuccess) {
+            // สร้าง modal element
+            const modal = document.createElement('div');
+            modal.className = 'test-result-modal';
+            
+            // กำหนด icon และสีตามผลลัพธ์
+            let icon, colorClass;
+            if (isSuccess) {
+                icon = '✅';
+                colorClass = 'test-result-success';
+            } else {
+                icon = '❌';
+                colorClass = 'test-result-error';
+            }
+            
+            modal.innerHTML = `
+                <div class="test-result-content">
+                    <div class="test-result-icon ${colorClass}">${icon}</div>
+                    <div class="test-result-message ${colorClass}">${message}</div>
+                    <button class="btn btn-primary" onclick="closeTestResult()">ตกลง</button>
+                </div>
+            `;
+            
+            // เพิ่ม modal ลงใน body
+            document.body.appendChild(modal);
+            
+            // ปิด modal เมื่อคลิกพื้นหลัง
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeTestResult();
+                }
+            });
+            
+            // ปิด modal เมื่อกด ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeTestResult();
+                }
+            });
+        }
+        
+        // ปิด modal ผลลัพธ์การทดสอบ
+        function closeTestResult() {
+            const modal = document.querySelector('.test-result-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+    </script>
+</body>
+</html>
+        """
+    
+    def _get_main_html_content(self) -> str:
+        """สร้างเนื้อหา main.html"""
+        return """
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -717,4 +1300,4 @@
     </script>
 </body>
 </html>
-        
+        """ 

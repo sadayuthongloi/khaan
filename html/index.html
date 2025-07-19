@@ -136,15 +136,6 @@
             background: #c82333;
         }
         
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-        
         .form-group {
             margin-bottom: 20px;
         }
@@ -256,10 +247,6 @@
         
         .test-result-error {
             color: #dc3545;
-        }
-        
-        .test-result-warning {
-            color: #ffc107;
         }
     </style>
 </head>
@@ -468,6 +455,27 @@
             }
         }
         
+        // ใช้ connection และไปยังหน้า main
+        async function useConnection(name) {
+            try {
+                const result = await eel.use_connection(name)();
+                
+                if (result.success) {
+                    // เก็บข้อมูล connection ใน sessionStorage
+                    sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
+                    sessionStorage.setItem('databaseExists', result.database_exists);
+                    
+                    // ไปยังหน้า main
+                    window.location.href = 'main.html';
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+        
         // แสดง alert
         function showAlert(message, type) {
             const alertDiv = document.getElementById('form-alert');
@@ -528,28 +536,7 @@
                 modal.remove();
             }
         }
-        
-        // ใช้ connection และไปยังหน้า main
-        async function useConnection(name) {
-            try {
-                const result = await eel.use_connection(name)();
-                
-                if (result.success) {
-                    // เก็บข้อมูล connection ใน sessionStorage
-                    sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
-                    sessionStorage.setItem('databaseExists', result.database_exists);
-                    
-                    // ไปยังหน้า main
-                    window.location.href = 'main.html';
-                } else {
-                    showAlert(result.message, 'danger');
-                }
-            } catch (error) {
-                showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
-                console.error('เกิดข้อผิดพลาด:', error);
-            }
-        }
     </script>
 </body>
 </html>
-    
+        
