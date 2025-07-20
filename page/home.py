@@ -171,6 +171,24 @@ def create_database(connection_name: str, database_name: str):
         return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
 
 
+@eel.expose
+def clear_collection(connection_name: str, collection_name: str, confirm_collection_name: str):
+    """ล้างข้อมูลใน collection"""
+    try:
+        # หา connection
+        connection = connection_manager.get_connection(connection_name)
+        
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+        
+        # ล้างข้อมูลใน collection
+        client = MongoDBClient(connection)
+        return client.clear_collection(collection_name, confirm_collection_name)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+
 def main():
     """ฟังก์ชันหลักสำหรับรันแอปพลิเคชัน"""
     # สร้าง HTML interface

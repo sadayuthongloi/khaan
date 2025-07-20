@@ -754,6 +754,9 @@ class HTMLGenerator:
             padding: 20px;
             border-bottom: 1px solid #e9ecef;
             background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .data-title {
@@ -766,6 +769,91 @@ class HTMLGenerator:
         .data-stats {
             color: #666;
             font-size: 0.9em;
+        }
+        
+        .data-header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .delete-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .delete-modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .delete-modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .delete-modal-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+        
+        .delete-modal-message {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .delete-modal-form {
+            margin-bottom: 25px;
+        }
+        
+        .delete-modal-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .delete-modal-form input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .delete-modal-form input:focus {
+            outline: none;
+            border-color: #dc3545;
+        }
+        
+        .delete-modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
         }
         
         .search-form {
@@ -944,8 +1032,15 @@ class HTMLGenerator:
         <div class="content">
             <div class="data-section">
                 <div class="data-header">
-                    <div class="data-title" id="data-title">เลือก Collection เพื่อดูข้อมูล</div>
-                    <div class="data-stats" id="data-stats"></div>
+                    <div>
+                        <div class="data-title" id="data-title">เลือก Collection เพื่อดูข้อมูล</div>
+                        <div class="data-stats" id="data-stats"></div>
+                    </div>
+                    <div class="data-header-right">
+                        <button class="btn btn-danger" id="delete-btn" onclick="showDeleteModal()" style="display: none;">
+                            🗑️ ล้างข้อมูล
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Search Form -->
@@ -979,6 +1074,27 @@ class HTMLGenerator:
                 <div class="data-content" id="data-content">
                     <div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="delete-modal" id="delete-modal" style="display: none;">
+        <div class="delete-modal-content">
+            <div class="delete-modal-header">
+                <div class="delete-modal-title">⚠️ ยืนยันการล้างข้อมูล</div>
+                <div class="delete-modal-message">
+                    คุณกำลังจะล้างข้อมูลทั้งหมดใน collection <strong id="modal-collection-name"></strong><br>
+                    การดำเนินการนี้ไม่สามารถยกเลิกได้ กรุณายืนยันชื่อ collection เพื่อดำเนินการต่อ
+                </div>
+            </div>
+            <div class="delete-modal-form">
+                <label for="confirm-collection-name">กรอกชื่อ collection เพื่อยืนยัน:</label>
+                <input type="text" id="confirm-collection-name" placeholder="กรอกชื่อ collection ที่ต้องการล้างข้อมูล">
+            </div>
+            <div class="delete-modal-actions">
+                <button class="btn btn-warning" onclick="confirmDelete()">🗑️ ล้างข้อมูล</button>
+                <button class="btn btn-secondary" onclick="hideDeleteModal()">❌ ยกเลิก</button>
             </div>
         </div>
     </div>
@@ -1075,8 +1191,9 @@ class HTMLGenerator:
                     </div>
                 `;
                 
-                // ซ่อน search form
+                // ซ่อน search form และปุ่ม Delete
                 document.getElementById('search-form').style.display = 'none';
+                document.getElementById('delete-btn').style.display = 'none';
                 
                 // โหลดข้อมูล
                 const result = await eel.get_collection_data(currentConnection.name, collectionName, 50)();
@@ -1105,14 +1222,17 @@ class HTMLGenerator:
             if (data.length === 0) {
                 container.innerHTML = '<div class="no-data">ไม่มีข้อมูลใน collection นี้</div>';
                 document.getElementById('data-stats').textContent = '0 เอกสาร';
+                // ซ่อนปุ่ม Delete เมื่อไม่มีข้อมูล
+                document.getElementById('delete-btn').style.display = 'none';
                 return;
             }
             
             // แสดงสถิติ
             document.getElementById('data-stats').textContent = `${data.length} เอกสาร (แสดง 50 รายการแรก)`;
             
-            // แสดง search form
+            // แสดง search form และปุ่ม Delete
             document.getElementById('search-form').style.display = 'block';
+            document.getElementById('delete-btn').style.display = 'inline-block';
             
             // สร้างตาราง
             if (data.length > 0) {
@@ -1297,6 +1417,69 @@ class HTMLGenerator:
             sessionStorage.removeItem('databaseExists');
             window.location.href = 'index.html';
         }
+        
+        // แสดง modal ล้างข้อมูล
+        function showDeleteModal() {
+            if (!currentCollection) return;
+            
+            document.getElementById('modal-collection-name').textContent = currentCollection;
+            document.getElementById('confirm-collection-name').value = '';
+            document.getElementById('delete-modal').style.display = 'flex';
+            document.getElementById('confirm-collection-name').focus();
+        }
+        
+        // ซ่อน modal ล้างข้อมูล
+        function hideDeleteModal() {
+            document.getElementById('delete-modal').style.display = 'none';
+        }
+        
+        // ยืนยันการล้างข้อมูล
+        async function confirmDelete() {
+            if (!currentCollection || !currentConnection) return;
+            
+            const confirmCollectionName = document.getElementById('confirm-collection-name').value.trim();
+            
+            if (!confirmCollectionName) {
+                alert('กรุณากรอกชื่อ collection เพื่อยืนยัน');
+                return;
+            }
+            
+            try {
+                const result = await eel.clear_collection(
+                    currentConnection.name, 
+                    currentCollection, 
+                    confirmCollectionName
+                )();
+                
+                if (result.success) {
+                    alert(result.message);
+                    hideDeleteModal();
+                    // โหลดข้อมูลใหม่
+                    await selectCollection(currentCollection);
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการล้างข้อมูล');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+        
+        // ปิด modal เมื่อคลิกพื้นหลัง
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('delete-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideDeleteModal();
+                }
+            });
+            
+            // เพิ่ม event listener สำหรับ Enter key ใน input
+            document.getElementById('confirm-collection-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    confirmDelete();
+                }
+            });
+        });
     </script>
 </body>
 </html>

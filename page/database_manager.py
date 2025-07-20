@@ -225,4 +225,31 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+    
+    def clear_collection(self, collection_name: str, confirm_collection_name: str) -> Dict:
+        """ล้างข้อมูลใน collection"""
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+            
+            # ตรวจสอบว่าชื่อ collection ที่ยืนยันถูกต้องหรือไม่
+            if collection_name != confirm_collection_name:
+                self.disconnect()
+                return {'success': False, 'message': f'ชื่อ collection ไม่ถูกต้อง กรุณากรอก "{collection_name}" ให้ถูกต้อง'}
+            
+            db = self.client[self.connection['database']]
+            collection = db[collection_name]
+            
+            # ล้างข้อมูลทั้งหมดใน collection
+            result = collection.delete_many({})
+            
+            self.disconnect()
+            return {
+                'success': True, 
+                'message': f'ล้างข้อมูลใน collection "{collection_name}" สำเร็จ (ลบ {result.deleted_count} เอกสาร)'
+            }
+            
+        except Exception as e:
+            self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'} 
