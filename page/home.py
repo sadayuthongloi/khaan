@@ -189,6 +189,24 @@ def clear_collection(connection_name: str, collection_name: str, confirm_collect
         return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
 
 
+@eel.expose
+def drop_collections(connection_name: str, collection_names: list):
+    """ลบ collections ที่เลือก"""
+    try:
+        # หา connection
+        connection = connection_manager.get_connection(connection_name)
+        
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+        
+        # ลบ collections
+        client = MongoDBClient(connection)
+        return client.drop_collections(collection_names)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+
 def main():
     """ฟังก์ชันหลักสำหรับรันแอปพลิเคชัน"""
     # สร้าง HTML interface

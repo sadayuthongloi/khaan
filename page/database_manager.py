@@ -252,4 +252,43 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'} 
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+    
+    def drop_collections(self, collection_names: List[str]) -> Dict:
+        """ลบ collections ที่เลือก (drop)"""
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+            
+            if not collection_names:
+                return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการลบ'}
+            
+            db = self.client[self.connection['database']]
+            dropped = []
+            errors = []
+            
+            for name in collection_names:
+                try:
+                    db.drop_collection(name)
+                    dropped.append(name)
+                except Exception as e:
+                    errors.append(f'{name}: {str(e)}')
+            
+            self.disconnect()
+            
+            if errors:
+                return {
+                    'success': len(dropped) > 0,
+                    'message': f'ลบสำเร็จ {len(dropped)} collections, ล้มเหลว {len(errors)} collections\n' + '\n'.join(errors),
+                    'dropped': dropped
+                }
+            
+            return {
+                'success': True,
+                'message': f'ลบ {len(dropped)} collections สำเร็จ: {", ".join(dropped)}',
+                'dropped': dropped
+            }
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}

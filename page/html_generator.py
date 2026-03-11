@@ -718,6 +718,34 @@ class HTMLGenerator:
             padding: 20px;
         }
         
+        .collections-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .btn-del {
+            padding: 4px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .btn-del:hover {
+            background: #c82333;
+        }
+        
+        .btn-del.show {
+            display: inline-block;
+        }
+        
         .collection-item {
             padding: 12px 15px;
             border: 1px solid #e9ecef;
@@ -726,6 +754,9 @@ class HTMLGenerator:
             cursor: pointer;
             transition: all 0.3s ease;
             background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .collection-item:hover {
@@ -737,6 +768,21 @@ class HTMLGenerator:
             background: #667eea;
             color: white;
             border-color: #667eea;
+        }
+        
+        .collection-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+        
+        .collection-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .data-section {
@@ -1019,7 +1065,10 @@ class HTMLGenerator:
             </div>
             
             <div class="collections-section">
-                <h3>Collections</h3>
+                <div class="collections-header">
+                    <h3>Collections</h3>
+                    <button class="btn-del" id="btn-del-collections" onclick="deleteSelectedCollections()">🗑️ Del</button>
+                </div>
                 <div id="collections-container">
                     <div class="loading">
                         <div class="spinner"></div>
@@ -1159,16 +1208,75 @@ class HTMLGenerator:
             
             if (collections.length === 0) {
                 container.innerHTML = '<div class="no-data">ไม่มี collections ในฐานข้อมูลนี้</div>';
+                document.getElementById('btn-del-collections').classList.remove('show');
                 return;
             }
             
             const collectionsList = collections.map(collection => `
                 <div class="collection-item" onclick="selectCollection('${collection}')">
-                    📄 ${collection}
+                    <input type="checkbox" class="collection-checkbox" data-collection="${collection}" onclick="onCheckboxChange(event)">
+                    <span class="collection-name">📄 ${collection}</span>
                 </div>
             `).join('');
             
             container.innerHTML = collectionsList;
+        }
+        
+        // จัดการเมื่อ checkbox เปลี่ยนสถานะ
+        function onCheckboxChange(event) {
+            event.stopPropagation();
+            updateDelButton();
+        }
+        
+        // อัปเดตการแสดงปุ่ม Del
+        function updateDelButton() {
+            const checked = document.querySelectorAll('.collection-checkbox:checked');
+            const delBtn = document.getElementById('btn-del-collections');
+            if (checked.length > 0) {
+                delBtn.classList.add('show');
+                delBtn.textContent = `🗑️ Del (${checked.length})`;
+            } else {
+                delBtn.classList.remove('show');
+                delBtn.textContent = '🗑️ Del';
+            }
+        }
+        
+        // ลบ collections ที่เลือก
+        async function deleteSelectedCollections() {
+            const checked = document.querySelectorAll('.collection-checkbox:checked');
+            if (checked.length === 0) {
+                alert('กรุณาเลือก collection ที่ต้องการลบ');
+                return;
+            }
+            
+            const names = Array.from(checked).map(cb => cb.dataset.collection);
+            const confirmMsg = '\u0e04\u0e38\u0e13\u0e41\u0e19\u0e48\u0e43\u0e08\u0e2b\u0e23\u0e37\u0e2d\u0e44\u0e21\u0e48\u0e17\u0e35\u0e48\u0e08\u0e30\u0e25\u0e1a ' + names.length + ' collections?\\n\\n' + names.join('\\n') + '\\n\\n\u0e01\u0e32\u0e23\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e19\u0e35\u0e49\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01\u0e44\u0e14\u0e49!';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                const result = await eel.drop_collections(currentConnection.name, names)();
+                
+                if (result.success) {
+                    alert(result.message);
+                    // รีเซ็ต current collection ถ้าถูกลบ
+                    if (currentCollection && names.includes(currentCollection)) {
+                        currentCollection = null;
+                        document.getElementById('data-title').textContent = 'เลือก Collection เพื่อดูข้อมูล';
+                        document.getElementById('data-stats').textContent = '';
+                        document.getElementById('data-content').innerHTML = '<div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>';
+                        document.getElementById('search-form').style.display = 'none';
+                        document.getElementById('delete-btn').style.display = 'none';
+                    }
+                    // โหลด collections ใหม่
+                    await loadCollections();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการลบ collections');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
         }
         
         // เลือก collection
