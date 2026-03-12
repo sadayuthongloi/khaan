@@ -5,6 +5,7 @@ MongoDB Database Manager
 
 import json
 import os
+import urllib.parse
 from typing import Dict, List, Optional
 from pymongo import MongoClient
 
@@ -41,7 +42,7 @@ class MongoDBConnectionManager:
             print(f"เกิดข้อผิดพลาดในการบันทึก config: {e}")
             return False
     
-    def add_connection(self, name: str, host: str, port: int, database: str, 
+    def add_connection(self, name: str, host: str, port: int, 
                       username: str = "", password: str = "") -> bool:
         """เพิ่ม connection ใหม่"""
         try:
@@ -49,7 +50,6 @@ class MongoDBConnectionManager:
                 'name': name,
                 'host': host,
                 'port': port,
-                'database': database,
                 'username': username,
                 'password': password
             }
@@ -103,7 +103,9 @@ class MongoDBClient:
     def _build_connection_string(self) -> str:
         """สร้าง connection string"""
         if self.connection['username'] and self.connection['password']:
-            return f"mongodb://{self.connection['username']}:{self.connection['password']}@{self.connection['host']}:{self.connection['port']}/"
+            username = urllib.parse.quote_plus(self.connection['username'])
+            password = urllib.parse.quote_plus(self.connection['password'])
+            return f"mongodb://{username}:{password}@{self.connection['host']}:{self.connection['port']}/"
         else:
             return f"mongodb://{self.connection['host']}:{self.connection['port']}/"
     
@@ -113,15 +115,10 @@ class MongoDBClient:
             if not self.connect():
                 return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
             
-            # ตรวจสอบว่าฐานข้อมูลมีอยู่หรือไม่
-            db_name = self.connection['database']
-            database_exists = db_name in self.client.list_database_names()
-            
             self.disconnect()
             
             return {
                 'success': True,
-                'database_exists': database_exists,
                 'message': 'เชื่อมต่อสำเร็จ'
             }
             
@@ -129,13 +126,28 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
-    def get_collections(self) -> Dict:
+    def list_databases(self) -> Dict:
+        """ดึงรายการฐานข้อมูลทั้งหมด"""
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+            
+            databases = sorted(self.client.list_database_names())
+            
+            self.disconnect()
+            return {'success': True, 'databases': databases}
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+    
+    def get_collections(self, database_name: str) -> Dict:
         """ดึงรายการ collections ในฐานข้อมูล"""
         try:
             if not self.connect():
                 return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
             
-            db = self.client[self.connection['database']]
+            db = self.client[database_name]
             collections = sorted(list(db.list_collection_names()))
             
             self.disconnect()
@@ -145,13 +157,13 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
-    def get_collection_fields(self, collection_name: str) -> Dict:
+    def get_collection_fields(self, database_name: str, collection_name: str) -> Dict:
         """ดึงรายการ fields ใน collection"""
         try:
             if not self.connect():
                 return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
             
-            db = self.client[self.connection['database']]
+            db = self.client[database_name]
             collection = db[collection_name]
             
             # ดึงข้อมูลตัวอย่างเพื่อหา fields
@@ -172,7 +184,7 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
-    def get_collection_data(self, collection_name: str, limit: int = 50, 
+    def get_collection_data(self, database_name: str, collection_name: str, limit: int = 50, 
                            search_field: str = "", search_operator: str = "", 
                            search_value: str = "") -> Dict:
         """ดึงข้อมูลใน collection พร้อม search"""
@@ -180,7 +192,7 @@ class MongoDBClient:
             if not self.connect():
                 return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
             
-            db = self.client[self.connection['database']]
+            db = self.client[database_name]
             collection = db[collection_name]
             
             # สร้าง query filter
@@ -208,26 +220,9 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
-    def create_database(self, database_name: str) -> Dict:
-        """สร้างฐานข้อมูลใหม่"""
-        try:
-            if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
-            
-            db = self.client[database_name]
-            
-            # สร้าง collection เปล่าเพื่อให้ฐานข้อมูลถูกสร้าง
-            db.create_collection('temp_collection')
-            db.drop_collection('temp_collection')
-            
-            self.disconnect()
-            return {'success': True, 'message': f'สร้างฐานข้อมูล {database_name} สำเร็จ'}
-            
-        except Exception as e:
-            self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
     
-    def clear_collection(self, collection_name: str, confirm_collection_name: str) -> Dict:
+    def clear_collection(self, database_name: str, collection_name: str, confirm_collection_name: str) -> Dict:
         """ล้างข้อมูลใน collection"""
         try:
             if not self.connect():
@@ -238,7 +233,7 @@ class MongoDBClient:
                 self.disconnect()
                 return {'success': False, 'message': f'ชื่อ collection ไม่ถูกต้อง กรุณากรอก "{collection_name}" ให้ถูกต้อง'}
             
-            db = self.client[self.connection['database']]
+            db = self.client[database_name]
             collection = db[collection_name]
             
             # ล้างข้อมูลทั้งหมดใน collection
@@ -254,7 +249,7 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
-    def drop_collections(self, collection_names: List[str]) -> Dict:
+    def drop_collections(self, database_name: str, collection_names: List[str]) -> Dict:
         """ลบ collections ที่เลือก (drop)"""
         try:
             if not self.connect():
@@ -263,7 +258,7 @@ class MongoDBClient:
             if not collection_names:
                 return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการลบ'}
             
-            db = self.client[self.connection['database']]
+            db = self.client[database_name]
             dropped = []
             errors = []
             

@@ -328,10 +328,7 @@ class HTMLGenerator:
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="connection-database">ชื่อฐานข้อมูล *</label>
-                        <input type="text" id="connection-database" required>
-                    </div>
+
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -384,7 +381,6 @@ class HTMLGenerator:
                     <div class="connection-name">${conn.name}</div>
                     <div class="connection-details">
                         <div><strong>Host:</strong> ${conn.host}:${conn.port}</div>
-                        <div><strong>Database:</strong> ${conn.database}</div>
                         ${conn.username ? `<div><strong>Username:</strong> ${conn.username}</div>` : ''}
                     </div>
                     <div class="connection-actions">
@@ -416,7 +412,6 @@ class HTMLGenerator:
                 name: document.getElementById('connection-name').value,
                 host: document.getElementById('connection-host').value,
                 port: parseInt(document.getElementById('connection-port').value),
-                database: document.getElementById('connection-database').value,
                 username: document.getElementById('connection-username').value,
                 password: document.getElementById('connection-password').value
             };
@@ -426,7 +421,6 @@ class HTMLGenerator:
                     formData.name,
                     formData.host,
                     formData.port,
-                    formData.database,
                     formData.username,
                     formData.password
                 )();
@@ -501,7 +495,6 @@ class HTMLGenerator:
                 if (result.success) {
                     // เก็บข้อมูล connection ใน sessionStorage
                     sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
-                    sessionStorage.setItem('databaseExists', result.database_exists);
                     
                     // ไปยังหน้า main
                     window.location.href = 'main.html';
@@ -581,6 +574,11 @@ class HTMLGenerator:
     
     def _get_main_html_content(self) -> str:
         """สร้างเนื้อหา main.html"""
+        # อ่านจากไฟล์ main.html ที่มีอยู่แล้ว
+        main_html_path = os.path.join(self.html_dir, 'main.html')
+        if os.path.exists(main_html_path):
+            with open(main_html_path, 'r', encoding='utf-8') as f:
+                return f.read()
         return """
 <!DOCTYPE html>
 <html lang="th">
