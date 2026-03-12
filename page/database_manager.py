@@ -287,3 +287,95 @@ class MongoDBClient:
         except Exception as e:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+    
+    def import_collection(self, database_name: str, collection_name: str, documents: list) -> Dict:
+        """นำเข้าข้อมูลจาก JSON เป็น collection ใหม่"""
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+            
+            if not documents:
+                return {'success': False, 'message': 'ไม่มีข้อมูลในไฟล์ JSON'}
+            
+            db = self.client[database_name]
+            collection = db[collection_name]
+            
+            # ถ้า documents เป็น dict เดี่ยว ให้แปลงเป็น list
+            if isinstance(documents, dict):
+                documents = [documents]
+            
+            result = collection.insert_many(documents)
+            
+            self.disconnect()
+            
+            return {
+                'success': True,
+                'message': f'นำเข้าข้อมูลสำเร็จ {len(result.inserted_ids)} รายการ ไปยัง collection "{collection_name}"',
+                'count': len(result.inserted_ids)
+            }
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+    def export_collections(self, database_name: str, collection_names: List[str], export_dir: str) -> Dict:
+        """ส่งออก collections เป็นไฟล์ JSON"""
+        from bson import json_util
+        import json
+        import os
+        
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+            
+            if not collection_names:
+                return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการส่งออก'}
+                
+            if not os.path.exists(export_dir):
+                return {'success': False, 'message': f'ไม่พบโฟลเดอร์ปลายทาง: {export_dir}'}
+            
+            db = self.client[database_name]
+            results = []
+            errors = []
+            
+            for name in collection_names:
+                try:
+                    collection = db[name]
+                    # ดึงข้อมูลทั้งหมด
+                    documents = list(collection.find())
+                    
+                    if not documents:
+                        errors.append(f'{name}: ไม่มีข้อมูลใน collection')
+                        continue
+                        
+                    # สร้าง path ไฟล์
+                    file_path = os.path.join(export_dir, f"{name}.json")
+                    
+                    # บันทึกเป็น JSON format (array) พร้อม format ที่สวยงาม
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        # ใช้ json_util.dumps เพื่อจัดการโครงสร้างแบบ BSON (เช่น ObjectId, datetime) ให้เป็น JSON มาตรฐาน
+                        json_str = json_util.dumps(documents, indent=4, ensure_ascii=False)
+                        f.write(json_str)
+                        
+                    results.append(name)
+                except Exception as e:
+                    errors.append(f'{name}: {str(e)}')
+            
+            self.disconnect()
+            
+            if errors:
+                return {
+                    'success': len(results) > 0,
+                    'message': f'ส่งออกสำเร็จ {len(results)} collections, ล้มเหลว {len(errors)} collections\n' + '\n'.join(errors),
+                    'results': results
+                }
+            
+            return {
+                'success': True,
+                'message': f'ส่งออก {len(results)} collectionsสำเร็จไปยัง:\n{export_dir}',
+                'results': results
+            }
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}

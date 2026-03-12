@@ -298,7 +298,12 @@ class HTMLGenerator:
         <div class="content">
             <!-- แสดง Connections ที่มีอยู่ -->
             <div class="section">
-                <h2>การเชื่อมต่อที่มีอยู่</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin-bottom: 0;">การเชื่อมต่อที่มีอยู่</h2>
+                    <button class="btn btn-secondary" onclick="openMongodbFolder()" style="display: flex; align-items: center; gap: 5px;" title="เปิดโฟลเดอร์ใน Windows Explorer">
+                        📁 C:\Program Files\MongoDB\Server
+                    </button>
+                </div>
                 <div id="connections-container" class="connections-grid">
                     <!-- Connections จะถูกแสดงที่นี่ -->
                 </div>
@@ -357,6 +362,19 @@ class HTMLGenerator:
             loadConnections();
         });
         
+        // เปิดโฟลเดอร์ MongoDB 
+        async function openMongodbFolder() {
+            try {
+                const result = await eel.open_mongodb_folder()();
+                if (!result.success) {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาด:', error);
+                showAlert('เกิดข้อผิดพลาดในการเปิดโฟลเดอร์', 'danger');
+            }
+        }
+
         // โหลดและแสดง connections
         async function loadConnections() {
             try {

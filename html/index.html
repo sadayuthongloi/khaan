@@ -290,10 +290,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="connection-database">ชื่อฐานข้อมูล *</label>
-                        <input type="text" id="connection-database" required>
-                    </div>
+
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -346,7 +343,6 @@
                     <div class="connection-name">${conn.name}</div>
                     <div class="connection-details">
                         <div><strong>Host:</strong> ${conn.host}:${conn.port}</div>
-                        <div><strong>Database:</strong> ${conn.database}</div>
                         ${conn.username ? `<div><strong>Username:</strong> ${conn.username}</div>` : ''}
                     </div>
                     <div class="connection-actions">
@@ -378,7 +374,6 @@
                 name: document.getElementById('connection-name').value,
                 host: document.getElementById('connection-host').value,
                 port: parseInt(document.getElementById('connection-port').value),
-                database: document.getElementById('connection-database').value,
                 username: document.getElementById('connection-username').value,
                 password: document.getElementById('connection-password').value
             };
@@ -388,7 +383,6 @@
                     formData.name,
                     formData.host,
                     formData.port,
-                    formData.database,
                     formData.username,
                     formData.password
                 )();
@@ -463,7 +457,6 @@
                 if (result.success) {
                     // เก็บข้อมูล connection ใน sessionStorage
                     sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
-                    sessionStorage.setItem('databaseExists', result.database_exists);
                     
                     // ไปยังหน้า main
                     window.location.href = 'main.html';

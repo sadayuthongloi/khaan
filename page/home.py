@@ -208,6 +208,149 @@ def drop_collections(connection_name: str, database_name: str, collection_names:
         return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
 
 
+@eel.expose
+def import_collection(connection_name: str, database_name: str):
+    """นำเข้า collection จากไฟล์ JSON (รองรับหลายไฟล์)"""
+    import json
+    import os
+    import tkinter as tk
+    from tkinter import filedialog
+    from bson import json_util
+    
+    try:
+        # เปิด file dialog เพื่อเลือกไฟล์ JSON (หลายไฟล์)
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        
+        file_paths = filedialog.askopenfilenames(
+            title='เลือกไฟล์ JSON เพื่อนำเข้า (เลือกได้หลายไฟล์)',
+            filetypes=[('JSON files', '*.json'), ('All files', '*.*')]
+        )
+        
+        root.destroy()
+        
+        if not file_paths:
+            return {'success': False, 'message': 'ไม่ได้เลือกไฟล์'}
+        
+        # หา connection
+        connection = connection_manager.get_connection(connection_name)
+        
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+        
+        results = []
+        errors = []
+        
+        for file_path in file_paths:
+            try:
+                # อ่านชื่อไฟล์เป็นชื่อ collection
+                collection_name = os.path.splitext(os.path.basename(file_path))[0]
+                
+                # อ่านไฟล์ JSON - รองรับทั้ง JSON array และ JSONL (หนึ่ง JSON ต่อบรรทัด)
+                documents = []
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read().strip()
+                    
+                    if content.startswith('['):
+                        # JSON array format
+                        documents = json_util.loads(content)
+                    else:
+                        # JSONL format (one JSON per line)
+                        for line in content.split('\n'):
+                            line = line.strip()
+                            if line:
+                                documents.append(json_util.loads(line))
+                
+                # นำเข้าข้อมูล
+                client = MongoDBClient(connection)
+                result = client.import_collection(database_name, collection_name, documents)
+                
+                if result['success']:
+                    results.append(f'{collection_name}: {result["count"]} รายการ')
+                else:
+                    errors.append(f'{collection_name}: {result["message"]}')
+                    
+            except json.JSONDecodeError as e:
+                errors.append(f'{os.path.basename(file_path)}: ไฟล์ JSON ไม่ถูกต้อง')
+            except Exception as e:
+                errors.append(f'{os.path.basename(file_path)}: {str(e)}')
+        
+        # สร้างข้อความสรุป
+        message_parts = []
+        if results:
+            message_parts.append(f'นำเข้าสำเร็จ {len(results)} ไฟล์:\n' + '\n'.join(results))
+        if errors:
+            message_parts.append(f'ล้มเหลว {len(errors)} ไฟล์:\n' + '\n'.join(errors))
+        
+        return {
+            'success': len(results) > 0,
+            'message': '\n\n'.join(message_parts),
+            'imported': len(results),
+            'failed': len(errors)
+        }
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+@eel.expose
+def export_collections(connection_name: str, database_name: str, collection_names: list):
+    """ส่งออก collections เป็นไฟล์ JSON"""
+    import tkinter as tk
+    from tkinter import filedialog
+    import os
+    
+    try:
+        # หา connection ก่อนเพื่อไม่ให้เสียเวลาถ้าไม่มี
+        connection = connection_manager.get_connection(connection_name)
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            
+        if not collection_names:
+            return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการส่งออก'}
+            
+        # เปิด file dialog เพื่อเลือกโฟลเดอร์สำหรับบันทึก
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        
+        export_dir = filedialog.askdirectory(
+            title=f'เลือกโฟลเดอร์สำหรับบันทึก {len(collection_names)} collections'
+        )
+        
+        root.destroy()
+        
+        if not export_dir:
+            return {'success': False, 'message': 'ยกเลิกการส่งออก'}
+            
+        # เริ่มการส่งออก
+        client = MongoDBClient(connection)
+        return client.export_collections(database_name, collection_names, export_dir)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+@eel.expose
+def open_mongodb_folder():
+    """เปิดโฟลเดอร์ MongoDB Server ใน Windows Explorer"""
+    import os
+    import platform
+    import subprocess
+    
+    path = r"C:\Program Files\MongoDB\Server"
+    try:
+        if platform.system() == "Windows":
+            if os.path.exists(path):
+                os.startfile(path)
+                return {'success': True, 'message': 'เปิดโฟลเดอร์สำเร็จ'}
+            else:
+                return {'success': False, 'message': f'ไม่พบโฟลเดอร์ {path}'}
+        else:
+            return {'success': False, 'message': 'ฟีเจอร์นี้รองรับเฉพาะ Windows'}
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+
 def main():
     """ฟังก์ชันหลักสำหรับรันแอปพลิเคชัน"""
     # สร้าง HTML interface
