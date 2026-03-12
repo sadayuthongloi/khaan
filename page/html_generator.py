@@ -52,7 +52,7 @@ class HTMLGenerator:
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f6f9;
             min-height: 100vh;
             padding: 20px;
         }
@@ -62,12 +62,12 @@ class HTMLGenerator:
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f6f9;
             color: white;
             padding: 30px;
             text-align: center;
@@ -95,7 +95,7 @@ class HTMLGenerator:
             color: #333;
             margin-bottom: 20px;
             font-size: 1.5em;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #0a58ca;
             padding-bottom: 10px;
         }
         
@@ -116,7 +116,7 @@ class HTMLGenerator:
         
         .connection-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         
         .connection-name {
@@ -148,12 +148,12 @@ class HTMLGenerator:
         }
         
         .btn-primary {
-            background: #667eea;
+            background: #0a58ca;
             color: white;
         }
         
         .btn-primary:hover {
-            background: #5a6fd8;
+            background: #0b5ed7;
         }
         
         .btn-success {
@@ -195,7 +195,7 @@ class HTMLGenerator:
         
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #0a58ca;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
         
@@ -252,7 +252,7 @@ class HTMLGenerator:
             max-width: 500px;
             width: 90%;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             animation: slideIn 0.3s ease;
         }
         
@@ -613,13 +613,13 @@ class HTMLGenerator:
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f6f9;
             color: white;
             padding: 20px 30px;
             display: flex;
@@ -655,12 +655,12 @@ class HTMLGenerator:
         }
         
         .btn-primary {
-            background: #667eea;
+            background: #0a58ca;
             color: white;
         }
         
         .btn-primary:hover {
-            background: #5a6fd8;
+            background: #0b5ed7;
         }
         
         .btn-success {
@@ -777,20 +777,20 @@ class HTMLGenerator:
         
         .collection-item:hover {
             background: #e9ecef;
-            border-color: #667eea;
+            border-color: #0a58ca;
         }
         
         .collection-item.active {
-            background: #667eea;
+            background: #0a58ca;
             color: white;
-            border-color: #667eea;
+            border-color: #0a58ca;
         }
         
         .collection-checkbox {
             width: 16px;
             height: 16px;
             cursor: pointer;
-            accent-color: #667eea;
+            accent-color: #0a58ca;
             flex-shrink: 0;
         }
         
@@ -957,7 +957,7 @@ class HTMLGenerator:
         .search-group select:focus,
         .search-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #0a58ca;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
         
@@ -1039,7 +1039,7 @@ class HTMLGenerator:
         
         .spinner {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border-top: 3px solid #0a58ca;
             border-radius: 50%;
             width: 30px;
             height: 30px;
