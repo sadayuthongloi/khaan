@@ -515,7 +515,7 @@ class HTMLGenerator:
                     sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
                     
                     // ไปยังหน้า main
-                    window.location.href = 'main.html';
+                    window.location.href = 'main.html?v=' + new Date().getTime();
                 } else {
                     showAlert(result.message, 'danger');
                 }
@@ -707,6 +707,7 @@ class HTMLGenerator:
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
         }
         
         .database-section {
@@ -806,10 +807,11 @@ class HTMLGenerator:
             background: white;
             margin: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
         
         .data-header {
@@ -971,6 +973,8 @@ class HTMLGenerator:
             flex: 1;
             overflow: auto;
             padding: 20px;
+            min-height: 0;
+            display: block;
         }
         
         .data-table {
@@ -1140,6 +1144,23 @@ class HTMLGenerator:
                     <div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>
                 </div>
             </div>
+
+            <!-- Editor Section -->
+            <div class="editor-section" id="editor-section" style="display: none; height: 100%; display: flex; flex-direction: column;">
+                <div class="data-header" style="margin-bottom: 10px;">
+                    <div>
+                        <div class="data-title" id="editor-title">แก้ไข Document</div>
+                        <div class="data-stats" id="editor-subtitle"></div>
+                    </div>
+                    <div class="data-header-right">
+                        <button class="btn btn-success" onclick="saveDocument(this)">💾 บันทึก</button>
+                        <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
+                    </div>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; background: white; border: 1px solid #e9ecef; border-radius: 5px; padding: 15px;">
+                    <textarea id="document-json-editor" style="width: 100%; height: 100%; font-family: 'Courier New', monospace; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1174,6 +1195,12 @@ class HTMLGenerator:
         document.addEventListener('DOMContentLoaded', function() {
             loadConnectionInfo();
             loadCollections();
+            
+            // ซ่อนหน้า Editor ถ้าเปิดอยู่ตอนเริ่มต้น
+            const editorSection = document.getElementById('editor-section');
+            if (editorSection) {
+                editorSection.style.display = 'none';
+            }
         });
         
         // โหลดข้อมูลการเชื่อมต่อ
@@ -1363,24 +1390,138 @@ class HTMLGenerator:
                 const fields = Object.keys(data[0]);
                 
                 const tableHTML = `
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                ${fields.map(field => `<th>${field}</th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.map(doc => `
+                    <div style="overflow-y: auto; overflow-x: auto; max-height: calc(100vh - 280px); border: 1px solid #e9ecef; border-radius: 5px;">
+                        <table class="data-table" style="background: white; margin: 0; width: 100%;">
+                            <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);">
                                 <tr>
-                                    ${fields.map(field => `<td>${formatValue(doc[field])}</td>`).join('')}
+                                    ${fields.map(field => `<th>${field}</th>`).join('')}
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${data.map(doc => `
+                                    <tr ondblclick="editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
+                                        ${fields.map(field => `<td>${formatValue(doc[field])}</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
                 
                 container.innerHTML = tableHTML;
             }
+        }
+        
+        let currentEditingDocumentId = null;
+
+        // เปิด Editor เพื่อแก้ไข Document
+        async function editDocument(documentId) {
+            try {
+                // แสดง loading
+                document.getElementById('data-content').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        กำลังโหลดข้อมูล Document...
+                    </div>
+                `;
+
+                // เรียก Python backend เพื่อดึงข้อมูลเต็มของ Document นี้
+                const result = await eel.get_document(currentConnection.name, currentDatabase, currentCollection, documentId)();
+
+                if (result.success) {
+                    currentEditingDocumentId = documentId;
+                    
+                    // สลับ UI
+                    document.querySelector('.data-section').style.display = 'none';
+                    const editorSection = document.getElementById('editor-section');
+                    editorSection.style.display = 'flex';
+                    
+                    document.getElementById('editor-subtitle').textContent = `Collection: ${currentCollection} | ID: ${documentId}`;
+                    
+                    // นำข้อมูล JSON string มาแสดงใน Editor
+                    const editor = document.getElementById('document-json-editor');
+                    editor.value = result.document_json;
+                    
+                    // เปลี่ยนกล่องข้อความให้กลับมาเป็นข้อมูลปกติเผื่อกดปิดแล้วกลับมา
+                    loadCollectionData(currentCollection); 
+                    
+                } else {
+                    document.getElementById('data-content').innerHTML = `
+                        <div class="alert alert-danger">${result.message}</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการโหลด Document:', error);
+                document.getElementById('data-content').innerHTML = `
+                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการดึงข้อมูล Document</div>
+                `;
+            }
+        }
+
+        // บันทึก Document
+        async function saveDocument(btnElement) {
+            if (!currentEditingDocumentId) return;
+            
+            const editor = document.getElementById('document-json-editor');
+            const documentJsonStr = editor.value;
+            
+            // ตรวจสอบ JSON ก่อนส่ง
+            try {
+                JSON.parse(documentJsonStr);
+            } catch (e) {
+                alert("รูปแบบ JSON ไม่ถูกต้อง กรุณาตรวจสอบวงเล็บปิดและคอมม่าอีกครั้ง");
+                return;
+            }
+
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = "กำลังบันทึก...";
+            btnElement.disabled = true;
+
+            try {
+                const result = await eel.update_document(
+                    currentConnection.name, 
+                    currentDatabase, 
+                    currentCollection, 
+                    currentEditingDocumentId, 
+                    documentJsonStr
+                )();
+
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+
+                if (result.success) {
+                    // ปิดหน้า Editor แล้ว Reload collection data
+                    closeEditor();
+                    loadCollectionData(currentCollection);
+                    
+                    // แสดง alert ลอยๆ ว่าสำเร็จ
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.style.position = 'fixed';
+                    alertDiv.style.top = '20px';
+                    alertDiv.style.right = '20px';
+                    alertDiv.style.zIndex = '9999';
+                    alertDiv.textContent = result.message;
+                    document.body.appendChild(alertDiv);
+                    
+                    setTimeout(() => alertDiv.remove(), 3000);
+                } else {
+                    alert("ล้มเหลว: " + result.message);
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการบันทึก Document:', error);
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+                alert("เกิดข้อผิดพลาด Javascript: " + String(error.message || error));
+            }
+        }
+
+        // ปิด Editor
+        function closeEditor() {
+            document.getElementById('editor-section').style.display = 'none';
+            document.querySelector('.data-section').style.display = 'block';
+            currentEditingDocumentId = null;
+            document.getElementById('document-json-editor').value = "";
         }
         
         // จัดรูปแบบค่า
@@ -1543,7 +1684,7 @@ class HTMLGenerator:
         function goBack() {
             sessionStorage.removeItem('currentConnection');
             sessionStorage.removeItem('databaseExists');
-            window.location.href = 'index.html';
+            window.location.href = 'index.html?v=' + new Date().getTime();
         }
         
         // แสดง modal ล้างข้อมูล

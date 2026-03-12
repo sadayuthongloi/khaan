@@ -110,6 +110,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
         }
 
         /* Database list section */
@@ -245,6 +246,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         .data-header {
@@ -430,7 +432,7 @@
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .search-row {
@@ -478,6 +480,8 @@
             flex: 1;
             overflow: auto;
             padding: 20px;
+            min-height: 0;
+            display: block;
         }
 
         .data-table {
@@ -621,7 +625,7 @@
                             <label for="search-operator">เงื่อนไข</label>
                             <select id="search-operator">
                                 <option value="">เลือกเงื่อนไข</option>
-                                <option value="=">=  (เท่ากับ)</option>
+                                <option value="=">= (เท่ากับ)</option>
                                 <option value="like">like (คล้าย)</option>
                             </select>
                         </div>
@@ -638,6 +642,23 @@
 
                 <div class="data-content" id="data-content">
                     <div class="no-data">เลือกฐานข้อมูลจากรายการด้านซ้ายเพื่อเริ่มต้น</div>
+                </div>
+            </div>
+
+            <!-- Editor Section -->
+            <div class="editor-section" id="editor-section" style="display: none; height: 100%; display: flex; flex-direction: column;">
+                <div class="data-header" style="margin-bottom: 10px;">
+                    <div>
+                        <div class="data-title" id="editor-title">แก้ไข Document</div>
+                        <div class="data-stats" id="editor-subtitle"></div>
+                    </div>
+                    <div class="data-header-right">
+                        <button class="btn btn-success" onclick="saveDocument(this)">💾 บันทึก</button>
+                        <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
+                    </div>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; background: white; border: 1px solid #e9ecef; border-radius: 5px; padding: 15px;">
+                    <textarea id="document-json-editor" style="width: 100%; height: 100%; font-family: 'Courier New', monospace; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
                 </div>
             </div>
         </div>
@@ -728,6 +749,10 @@
 
                 if (result.success) {
                     displayDatabases(result.databases);
+                    
+                    // ปิดหน้า Edit 
+                    document.getElementById('editor-section').style.display = 'none';
+                    document.querySelector('.data-section').style.display = 'block';
                 } else {
                     document.getElementById('databases-container').innerHTML = `
                         <div class="alert alert-danger">${result.message}</div>
@@ -839,19 +864,21 @@
             `).join('');
 
             const tableHTML = `
-                <table class="data-table" style="background: white;">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px; text-align: center;">
-                                <input type="checkbox" id="select-all-collections" onclick="toggleAllCollections(event)" title="เลือกทั้งหมด">
-                            </th>
-                            <th>ชื่อ Collection</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${collectionsList}
-                    </tbody>
-                </table>
+                <div style="overflow-y: auto; max-height: calc(100vh - 260px); border: 1px solid #e9ecef; border-radius: 5px;">
+                    <table class="data-table" style="background: white; margin: 0; width: 100%;">
+                        <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);">
+                            <tr>
+                                <th style="width: 50px; text-align: center;">
+                                    <input type="checkbox" id="select-all-collections" onclick="toggleAllCollections(event)" title="เลือกทั้งหมด">
+                                </th>
+                                <th>ชื่อ Collection</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${collectionsList}
+                        </tbody>
+                    </table>
+                </div>
             `;
 
             container.innerHTML = header + tableHTML;
@@ -933,6 +960,10 @@
                 event.currentTarget.classList.add('active');
 
                 currentCollection = collectionName;
+                
+                // ปิดหน้า Edit
+                document.getElementById('editor-section').style.display = 'none';
+                document.querySelector('.data-section').style.display = 'block';
 
                 // แสดง loading
                 document.getElementById('data-title').textContent = `${currentDatabase} / ${collectionName}`;
@@ -999,7 +1030,7 @@
                         </thead>
                         <tbody>
                             ${data.map(doc => `
-                                <tr>
+                                <tr ondblclick="editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
                                     ${fields.map(field => `<td>${formatValue(doc[field])}</td>`).join('')}
                                 </tr>
                             `).join('')}
@@ -1009,6 +1040,118 @@
 
                 container.innerHTML = tableHTML;
             }
+        }
+
+        let currentEditingDocumentId = null;
+
+        // เปิด Editor เพื่อแก้ไข Document
+        async function editDocument(documentId) {
+            try {
+                // แสดง loading
+                document.getElementById('data-content').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        กำลังโหลดข้อมูล Document...
+                    </div>
+                `;
+
+                // เรียก Python backend เพื่อดึงข้อมูลเต็มของ Document นี้
+                const result = await eel.get_document(currentConnection.name, currentDatabase, currentCollection, documentId)();
+
+                if (result.success) {
+                    currentEditingDocumentId = documentId;
+                    
+                    // สลับ UI
+                    document.querySelector('.data-section').style.display = 'none';
+                    const editorSection = document.getElementById('editor-section');
+                    editorSection.style.display = 'flex';
+                    
+                    document.getElementById('editor-subtitle').textContent = `Collection: ${currentCollection} | ID: ${documentId}`;
+                    
+                    // นำข้อมูล JSON string มาแสดงใน Editor
+                    const editor = document.getElementById('document-json-editor');
+                    editor.value = result.document_json;
+                    
+                    // เปลี่ยนกล่องข้อความให้กลับมาเป็นข้อมูลปกติเผื่อกดปิดแล้วกลับมา
+                    loadCollectionData(currentCollection); 
+                    
+                } else {
+                    document.getElementById('data-content').innerHTML = `
+                        <div class="alert alert-danger">${result.message}</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการโหลด Document:', error);
+                document.getElementById('data-content').innerHTML = `
+                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการดึงข้อมูล Document</div>
+                `;
+            }
+        }
+
+        // บันทึก Document
+        async function saveDocument(btnElement) {
+            if (!currentEditingDocumentId) return;
+            
+            const editor = document.getElementById('document-json-editor');
+            const documentJsonStr = editor.value;
+            
+            // ตรวจสอบ JSON ก่อนส่ง
+            try {
+                JSON.parse(documentJsonStr);
+            } catch (e) {
+                alert("รูปแบบ JSON ไม่ถูกต้อง กรุณาตรวจสอบวงเล็บปิดและคอมม่าอีกครั้ง");
+                return;
+            }
+
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = "กำลังบันทึก...";
+            btnElement.disabled = true;
+
+            try {
+                const result = await eel.update_document(
+                    currentConnection.name, 
+                    currentDatabase, 
+                    currentCollection, 
+                    currentEditingDocumentId, 
+                    documentJsonStr
+                )();
+
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+
+                if (result.success) {
+                    // ปิดหน้า Editor แล้ว Reload collection data
+                    closeEditor();
+                    loadCollectionData(currentCollection);
+                    
+                    // แสดง alert ลอยๆ ว่าสำเร็จ
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.style.position = 'fixed';
+                    alertDiv.style.top = '20px';
+                    alertDiv.style.right = '20px';
+                    alertDiv.style.zIndex = '9999';
+                    alertDiv.textContent = result.message;
+                    document.body.appendChild(alertDiv);
+                    
+                    setTimeout(() => alertDiv.remove(), 3000);
+                } else {
+                    alert("ล้มเหลว: " + result.message);
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการบันทึก Document:', error);
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+                alert("เกิดข้อผิดพลาด Javascript: " + String(error.message || error));
+            }
+        }
+
+        // ปิด Editor
+        function closeEditor() {
+            document.getElementById('editor-section').style.display = 'none';
+            document.querySelector('.data-section').style.display = 'block';
+            currentEditingDocumentId = null;
+            document.getElementById('document-json-editor').value = "";
         }
 
         // จัดรูปแบบค่า
@@ -1192,7 +1335,7 @@
         // กลับไปหน้าแรก
         function goBack() {
             sessionStorage.removeItem('currentConnection');
-            window.location.href = 'index.html';
+            window.location.href = 'index.html?v=' + new Date().getTime();
         }
 
         // แสดง modal ล้างข้อมูล

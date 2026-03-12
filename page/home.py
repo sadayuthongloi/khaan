@@ -151,6 +151,34 @@ def get_collection_data(connection_name: str, database_name: str, collection_nam
     except Exception as e:
         return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
 
+@eel.expose
+def get_document(connection_name: str, database_name: str, collection_name: str, document_id: str):
+    """ดึงข้อมูลเอกสาร 1 รายการตาม _id"""
+    try:
+        connection = connection_manager.get_connection(connection_name)
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            
+        client = MongoDBClient(connection)
+        return client.get_document(database_name, collection_name, document_id)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+@eel.expose
+def update_document(connection_name: str, database_name: str, collection_name: str, document_id: str, document_json_str: str):
+    """อัปเดตข้อมูลเอกสาร 1 รายการ"""
+    try:
+        connection = connection_manager.get_connection(connection_name)
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            
+        client = MongoDBClient(connection)
+        return client.update_document(database_name, collection_name, document_id, document_json_str)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
 
 @eel.expose
 def get_collection_fields(connection_name: str, database_name: str, collection_name: str):

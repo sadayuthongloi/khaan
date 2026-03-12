@@ -477,7 +477,7 @@
                     sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
                     
                     // ไปยังหน้า main
-                    window.location.href = 'main.html';
+                    window.location.href = 'main.html?v=' + new Date().getTime();
                 } else {
                     showAlert(result.message, 'danger');
                 }

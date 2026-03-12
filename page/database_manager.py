@@ -219,6 +219,81 @@ class MongoDBClient:
         except Exception as e:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            
+    def get_document(self, database_name: str, collection_name: str, document_id: str) -> Dict:
+        """ดึงข้อมูลเอกสาร 1 รายการตาม _id"""
+        from bson.objectid import ObjectId
+        from bson import json_util
+        
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                
+            db = self.client[database_name]
+            collection = db[collection_name]
+            
+            try:
+                query_id = ObjectId(document_id)
+            except Exception:
+                query_id = document_id
+                
+            doc = collection.find_one({"_id": query_id})
+            
+            if not doc:
+                self.disconnect()
+                return {'success': False, 'message': 'ไม่พบเอกสารนี้'}
+                
+            doc_json_str = json_util.dumps(doc, ensure_ascii=False, indent=4)
+            
+            self.disconnect()
+            return {'success': True, 'document_json': doc_json_str}
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+    def update_document(self, database_name: str, collection_name: str, document_id: str, document_json_str: str) -> Dict:
+        """อัปเดตข้อมูลเอกสาร 1 รายการ"""
+        from bson.objectid import ObjectId
+        from bson import json_util
+        
+        try:
+            if not self.connect():
+                print("[DEBUG] update_document: Connection failed")
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                
+            db = self.client[database_name]
+            collection = db[collection_name]
+            
+            print(f"[DEBUG] update_document: db={database_name}, col={collection_name}, id={document_id}")
+            
+            try:
+                update_data = json_util.loads(document_json_str)
+            except Exception as e:
+                self.disconnect()
+                return {'success': False, 'message': f'รูปแบบ JSON ไม่ถูกต้อง: {str(e)}'}
+                
+            try:
+                query_id = ObjectId(document_id)
+            except Exception:
+                query_id = document_id
+                
+            if "_id" in update_data:
+                del update_data["_id"]
+            
+            result = collection.replace_one({"_id": query_id}, update_data)
+            print(f"[DEBUG] update_document: replaced! matched={result.matched_count}, modified={result.modified_count}")
+            
+            self.disconnect()
+            
+            if result.matched_count == 0:
+                return {'success': False, 'message': 'ไม่พบเอกสารนี้ในการอัปเดต'}
+                
+            return {'success': True, 'message': 'อัปเดตข้อมูลสำเร็จ'}
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
 
     
