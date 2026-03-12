@@ -1017,8 +1017,12 @@
                 return '<em>null</em>';
             }
 
+            if (Array.isArray(value)) {
+                return '<span style="color: #6c757d; font-style: italic;">[array]</span>';
+            }
+
             if (typeof value === 'object') {
-                return `<div class="json-view">${JSON.stringify(value, null, 2)}</div>`;
+                return '<span style="color: #6c757d; font-style: italic;">[object]</span>';
             }
 
             if (typeof value === 'string' && value.length > 100) {
