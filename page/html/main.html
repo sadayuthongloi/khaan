@@ -91,6 +91,15 @@
             background: #5a6268;
         }
 
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
         .main-container {
             display: flex;
             height: calc(100vh - 80px);
@@ -567,6 +576,109 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Editor Field Rows */
+        .editor-fields-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+        }
+
+        .editor-field-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .editor-field-row:last-child {
+            border-bottom: none;
+        }
+
+        .editor-field-key {
+            min-width: 160px;
+            max-width: 200px;
+            font-weight: 600;
+            color: #333;
+            padding-top: 8px;
+            font-size: 0.9em;
+            word-break: break-all;
+            flex-shrink: 0;
+        }
+
+        .editor-field-value {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .editor-field-value input,
+        .editor-field-value textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            transition: border-color 0.3s ease;
+        }
+
+        .editor-field-value input:focus,
+        .editor-field-value textarea:focus {
+            outline: none;
+            border-color: #0a58ca;
+            box-shadow: 0 0 0 2px rgba(10, 88, 202, 0.15);
+        }
+
+        .editor-field-value textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .editor-field-value .field-readonly {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #6c757d;
+            word-break: break-all;
+        }
+
+        .editor-field-actions {
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+
+        .btn-update-field {
+            padding: 6px 14px;
+            background: #0a58ca;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-update-field:hover {
+            background: #084298;
+        }
+
+        .btn-update-field:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn-update-field.success {
+            background: #28a745;
+        }
     </style>
 </head>
 
@@ -646,19 +758,19 @@
             </div>
 
             <!-- Editor Section -->
-            <div class="editor-section" id="editor-section" style="display: none; height: 100%; display: flex; flex-direction: column;">
+            <div class="editor-section" id="editor-section" style="display: none; height: 100%; flex-direction: column;">
                 <div class="data-header" style="margin-bottom: 10px;">
                     <div>
                         <div class="data-title" id="editor-title">แก้ไข Document</div>
                         <div class="data-stats" id="editor-subtitle"></div>
                     </div>
                     <div class="data-header-right">
-                        <button class="btn btn-success" onclick="saveDocument(this)">💾 บันทึก</button>
+                        <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
                         <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
                     </div>
                 </div>
-                <div style="flex: 1; display: flex; flex-direction: column; background: white; border: 1px solid #e9ecef; border-radius: 5px; padding: 15px;">
-                    <textarea id="document-json-editor" style="width: 100%; height: 100%; font-family: 'Courier New', monospace; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
+                <div class="editor-fields-container" id="editor-fields-container">
+                    <!-- Field rows will be rendered here -->
                 </div>
             </div>
         </div>
@@ -718,6 +830,8 @@
         let currentDatabase = null;
         let currentCollection = null;
         let currentFields = [];
+        let currentEditingDocumentId = null;
+        let currentDocumentData = null;
 
         // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function () {
@@ -1042,13 +1156,18 @@
             }
         }
 
-        let currentEditingDocumentId = null;
+
 
         // เปิด Editor เพื่อแก้ไข Document
         async function editDocument(documentId) {
             try {
-                // แสดง loading
-                document.getElementById('data-content').innerHTML = `
+                // สลับ UI ทันที
+                document.querySelector('.data-section').style.display = 'none';
+                const editorSection = document.getElementById('editor-section');
+                editorSection.style.display = 'flex';
+                
+                // แสดง loading ใน editor container
+                document.getElementById('editor-fields-container').innerHTML = `
                     <div class="loading">
                         <div class="spinner"></div>
                         กำลังโหลดข้อมูล Document...
@@ -1061,88 +1180,147 @@
                 if (result.success) {
                     currentEditingDocumentId = documentId;
                     
-                    // สลับ UI
-                    document.querySelector('.data-section').style.display = 'none';
-                    const editorSection = document.getElementById('editor-section');
-                    editorSection.style.display = 'flex';
-                    
                     document.getElementById('editor-subtitle').textContent = `Collection: ${currentCollection} | ID: ${documentId}`;
                     
-                    // นำข้อมูล JSON string มาแสดงใน Editor
-                    const editor = document.getElementById('document-json-editor');
-                    editor.value = result.document_json;
-                    
-                    // เปลี่ยนกล่องข้อความให้กลับมาเป็นข้อมูลปกติเผื่อกดปิดแล้วกลับมา
-                    loadCollectionData(currentCollection); 
+                    // Parse JSON แล้วสร้าง field rows
+                    currentDocumentData = JSON.parse(result.document_json);
+                    renderEditorFields(currentDocumentData);
                     
                 } else {
-                    document.getElementById('data-content').innerHTML = `
+                    document.getElementById('editor-fields-container').innerHTML = `
                         <div class="alert alert-danger">${result.message}</div>
                     `;
                 }
             } catch (error) {
                 console.error('เกิดข้อผิดพลาดในการโหลด Document:', error);
-                document.getElementById('data-content').innerHTML = `
+                document.getElementById('editor-fields-container').innerHTML = `
                     <div class="alert alert-danger">เกิดข้อผิดพลาดในการดึงข้อมูล Document</div>
                 `;
             }
         }
 
-        // บันทึก Document
-        async function saveDocument(btnElement) {
+        // Render field rows ใน Editor
+        function renderEditorFields(docData) {
+            const container = document.getElementById('editor-fields-container');
+            let html = '';
+
+            for (const [key, value] of Object.entries(docData)) {
+                const isId = (key === '_id');
+                const valueStr = (typeof value === 'object' && value !== null)
+                    ? JSON.stringify(value, null, 2)
+                    : String(value ?? '');
+                const isMultiline = (typeof value === 'object' && value !== null) || valueStr.length > 80;
+                const escapedValue = valueStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const escapedKey = key.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                html += `<div class="editor-field-row">`;
+                html += `  <div class="editor-field-key" title="${key}">${key}</div>`;
+                html += `  <div class="editor-field-value">`;
+
+                if (isId) {
+                    // _id เป็น read-only
+                    html += `<div class="field-readonly">${escapedValue}</div>`;
+                } else if (isMultiline) {
+                    html += `<textarea id="field-${escapedKey}" rows="4">${escapedValue}</textarea>`;
+                } else {
+                    html += `<input type="text" id="field-${escapedKey}" value="${escapedValue}">`;
+                }
+
+                html += `  </div>`;
+                html += `  <div class="editor-field-actions">`;
+
+                if (!isId) {
+                    html += `<button class="btn-update-field" onclick="updateField('${escapedKey}', this)">💾 Update</button>`;
+                }
+
+                html += `  </div>`;
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // เรียงลำดับฟิลด์ A-Z
+        function sortEditorFields() {
+            if (!currentDocumentData) return;
+            
+            // สร้าง object ใหม่ที่เรียงลำดับ key แล้ว
+            const sortedData = {};
+            // _id ควรอยู่บนสุดเสมอ
+            if (currentDocumentData._id) {
+                sortedData._id = currentDocumentData._id;
+            }
+            
+            Object.keys(currentDocumentData)
+                .filter(key => key !== '_id')
+                .sort()
+                .forEach(key => {
+                    sortedData[key] = currentDocumentData[key];
+                });
+            
+            // เก็บข้อมูลที่เรียงแล้วไว้ใช้ต่อ
+            currentDocumentData = sortedData;
+            renderEditorFields(currentDocumentData);
+        }
+
+        // อัปเดตเฉพาะ field เดียว
+        async function updateField(fieldKey, btnElement) {
             if (!currentEditingDocumentId) return;
-            
-            const editor = document.getElementById('document-json-editor');
-            const documentJsonStr = editor.value;
-            
-            // ตรวจสอบ JSON ก่อนส่ง
+
+            const inputEl = document.getElementById('field-' + fieldKey);
+            if (!inputEl) return;
+
+            const rawValue = inputEl.value;
+
+            // ลองแปลง JSON ก่อน ถ้าไม่ได้ก็ใช้เป็น string
+            let valueJsonStr;
             try {
-                JSON.parse(documentJsonStr);
-            } catch (e) {
-                alert("รูปแบบ JSON ไม่ถูกต้อง กรุณาตรวจสอบวงเล็บปิดและคอมม่าอีกครั้ง");
-                return;
+                JSON.parse(rawValue);
+                valueJsonStr = rawValue;
+            } catch {
+                // เป็น string ธรรมดา
+                valueJsonStr = JSON.stringify(rawValue);
             }
 
             const originalText = btnElement.innerHTML;
-            btnElement.innerHTML = "กำลังบันทึก...";
+            btnElement.innerHTML = '⏳...';
             btnElement.disabled = true;
 
             try {
-                const result = await eel.update_document(
-                    currentConnection.name, 
-                    currentDatabase, 
-                    currentCollection, 
-                    currentEditingDocumentId, 
-                    documentJsonStr
+                const result = await eel.update_document_field(
+                    currentConnection.name,
+                    currentDatabase,
+                    currentCollection,
+                    currentEditingDocumentId,
+                    fieldKey,
+                    valueJsonStr
                 )();
 
-                btnElement.innerHTML = originalText;
-                btnElement.disabled = false;
-
                 if (result.success) {
-                    // ปิดหน้า Editor แล้ว Reload collection data
-                    closeEditor();
-                    loadCollectionData(currentCollection);
-                    
-                    // แสดง alert ลอยๆ ว่าสำเร็จ
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-success';
-                    alertDiv.style.position = 'fixed';
-                    alertDiv.style.top = '20px';
-                    alertDiv.style.right = '20px';
-                    alertDiv.style.zIndex = '9999';
-                    alertDiv.textContent = result.message;
-                    document.body.appendChild(alertDiv);
-                    
-                    setTimeout(() => alertDiv.remove(), 3000);
+                    // อัปเดตข้อมูลใน currentDocumentData ด้วย
+                    try {
+                        currentDocumentData[fieldKey] = JSON.parse(valueJsonStr);
+                    } catch {
+                        currentDocumentData[fieldKey] = rawValue;
+                    }
+
+                    btnElement.innerHTML = '✅';
+                    btnElement.classList.add('success');
+                    setTimeout(() => {
+                        btnElement.innerHTML = originalText;
+                        btnElement.classList.remove('success');
+                        btnElement.disabled = false;
+                    }, 1500);
                 } else {
-                    alert("ล้มเหลว: " + result.message);
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                    showAlert('ล้มเหลว: ' + result.message, 'ผิดพลาด', 'error');
                 }
             } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการบันทึก Document:', error);
+                console.error('เกิดข้อผิดพลาดในการอัปเดต field:', error);
                 btnElement.innerHTML = originalText;
                 btnElement.disabled = false;
-                alert("เกิดข้อผิดพลาด Javascript: " + String(error.message || error));
+                showAlert('เกิดข้อผิดพลาด: ' + String(error.message || error), 'ผิดพลาด', 'error');
             }
         }
 
@@ -1151,7 +1329,8 @@
             document.getElementById('editor-section').style.display = 'none';
             document.querySelector('.data-section').style.display = 'block';
             currentEditingDocumentId = null;
-            document.getElementById('document-json-editor').value = "";
+            currentDocumentData = null;
+            document.getElementById('editor-fields-container').innerHTML = '';
         }
 
         // จัดรูปแบบค่า

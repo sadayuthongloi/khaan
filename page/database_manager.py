@@ -294,9 +294,49 @@ class MongoDBClient:
         except Exception as e:
             self.disconnect()
             return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
-    
 
-    
+    def update_document_field(self, database_name: str, collection_name: str, document_id: str, field_key: str, field_value_json_str: str) -> Dict:
+        """อัปเดตเฉพาะ field เดียวของเอกสาร"""
+        from bson.objectid import ObjectId
+        from bson import json_util
+        
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                
+            db = self.client[database_name]
+            collection = db[collection_name]
+            
+            # แปลง value จาก JSON string
+            try:
+                field_value = json_util.loads(field_value_json_str)
+            except Exception as e:
+                self.disconnect()
+                return {'success': False, 'message': f'รูปแบบ JSON ไม่ถูกต้อง: {str(e)}'}
+            
+            # แปลง document_id
+            try:
+                query_id = ObjectId(document_id)
+            except Exception:
+                query_id = document_id
+            
+            # ใช้ $set เพื่ออัปเดตเฉพาะ field
+            result = collection.update_one(
+                {"_id": query_id},
+                {"$set": {field_key: field_value}}
+            )
+            
+            self.disconnect()
+            
+            if result.matched_count == 0:
+                return {'success': False, 'message': 'ไม่พบเอกสารนี้ในการอัปเดต'}
+                
+            return {'success': True, 'message': f'อัปเดต field "{field_key}" สำเร็จ'}
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
     def clear_collection(self, database_name: str, collection_name: str, confirm_collection_name: str) -> Dict:
         """ล้างข้อมูลใน collection"""
         try:

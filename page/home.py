@@ -181,6 +181,21 @@ def update_document(connection_name: str, database_name: str, collection_name: s
 
 
 @eel.expose
+def update_document_field(connection_name: str, database_name: str, collection_name: str, document_id: str, field_key: str, field_value_json_str: str):
+    """อัปเดตเฉพาะ field เดียวของเอกสาร"""
+    try:
+        connection = connection_manager.get_connection(connection_name)
+        if not connection:
+            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            
+        client = MongoDBClient(connection)
+        return client.update_document_field(database_name, collection_name, document_id, field_key, field_value_json_str)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+
+
+@eel.expose
 def get_collection_fields(connection_name: str, database_name: str, collection_name: str):
     """ดึงรายการ fields ใน collection"""
     try:
