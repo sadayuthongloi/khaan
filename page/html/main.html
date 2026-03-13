@@ -592,24 +592,30 @@
 
         .editor-field-row {
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            background: #fafafa;
+            transition: background 0.15s;
         }
 
-        .editor-field-row:last-child {
-            border-bottom: none;
+        .editor-field-row:hover {
+            background: #f0f4ff;
+            border-color: #c8d8ff;
         }
 
         .editor-field-key {
-            min-width: 160px;
-            max-width: 200px;
             font-weight: 600;
-            color: #333;
-            padding-top: 8px;
-            font-size: 0.9em;
-            word-break: break-all;
+            color: #0a58ca;
+            font-size: 0.85em;
+            word-break: break-word;
+            letter-spacing: 0.02em;
+            width: 150px;
+            min-width: 150px;
             flex-shrink: 0;
         }
 
@@ -621,12 +627,13 @@
         .editor-field-value input,
         .editor-field-value textarea {
             width: 100%;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
             transition: border-color 0.3s ease;
+            box-sizing: border-box;
         }
 
         .editor-field-value input:focus,
@@ -638,11 +645,11 @@
 
         .editor-field-value textarea {
             resize: vertical;
-            min-height: 60px;
+            min-height: 38px;
         }
 
         .editor-field-value .field-readonly {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 4px;
@@ -653,12 +660,12 @@
         }
 
         .editor-field-actions {
+            display: flex;
             flex-shrink: 0;
-            padding-top: 4px;
         }
 
         .btn-update-field {
-            padding: 6px 14px;
+            padding: 5px 14px;
             background: #0a58ca;
             color: white;
             border: none;
