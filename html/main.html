@@ -17,6 +17,29 @@
             background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom scrollbar for a premium look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+            border: 2px solid #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
         }
 
         .header {
@@ -61,7 +84,7 @@
         }
 
         .btn-primary:hover {
-            background: #0b5ed7;
+            background: #084298;
         }
 
         .btn-success {
@@ -91,9 +114,19 @@
             background: #5a6268;
         }
 
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
         .main-container {
             display: flex;
-            height: calc(100vh - 80px);
+            flex: 1;
+            min-height: 0;
         }
 
         .sidebar {
@@ -110,6 +143,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
         }
 
         /* Database list section */
@@ -156,12 +190,12 @@
             font-weight: 500;
         }
 
-        /* Collections section */
-        .collections-section {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            border-top: 1px solid #e9ecef;
+        /* Collections grid in content area */
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 10px 0;
         }
 
         .collections-header {
@@ -198,17 +232,16 @@
         }
 
         .collection-item {
-            padding: 10px 12px;
+            padding: 15px;
             border: 1px solid #e9ecef;
-            border-radius: 5px;
-            margin-bottom: 6px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #f8f9fa;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
+            gap: 10px;
+            font-size: 0.95em;
         }
 
         .collection-item:hover {
@@ -246,6 +279,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         .data-header {
@@ -354,12 +388,89 @@
             background: #e0a800;
         }
 
+        /* Generic Modals (Alert & Confirm) */
+        .generic-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .generic-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .generic-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .generic-modal.show .generic-modal-content {
+            transform: translateY(0);
+        }
+
+        .generic-modal-header {
+            margin-bottom: 15px;
+        }
+
+        .generic-modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .generic-modal-title.error {
+            color: #dc3545;
+        }
+
+        .generic-modal-title.success {
+            color: #28a745;
+        }
+
+        .generic-modal-title.warning {
+            color: #ffc107;
+        }
+
+        .generic-modal-message {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            white-space: pre-line;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .generic-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
         .search-form {
             background: white;
             padding: 15px;
             border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .search-row {
@@ -405,8 +516,10 @@
 
         .data-content {
             flex: 1;
-            overflow: auto;
+            overflow-y: auto;
+            overflow-x: auto;
             padding: 20px;
+            min-height: 0;
         }
 
         .data-table {
@@ -416,15 +529,22 @@
 
         .data-table th,
         .data-table td {
-            padding: 12px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .data-table th {
             background: #f8f9fa;
-            font-weight: bold;
+            font-weight: 600;
             color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .data-table tr:hover {
@@ -492,6 +612,116 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Editor Field Rows */
+        .editor-fields-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+        }
+
+        .editor-field-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            background: #fafafa;
+            transition: background 0.15s;
+        }
+
+        .editor-field-row:hover {
+            background: #f0f4ff;
+            border-color: #c8d8ff;
+        }
+
+        .editor-field-key {
+            font-weight: 600;
+            color: #0a58ca;
+            font-size: 0.85em;
+            word-break: break-word;
+            letter-spacing: 0.02em;
+            width: 150px;
+            min-width: 150px;
+            flex-shrink: 0;
+        }
+
+        .editor-field-value {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .editor-field-value input,
+        .editor-field-value textarea {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .editor-field-value input:focus,
+        .editor-field-value textarea:focus {
+            outline: none;
+            border-color: #0a58ca;
+            box-shadow: 0 0 0 2px rgba(10, 88, 202, 0.15);
+        }
+
+        .editor-field-value textarea {
+            resize: vertical;
+            min-height: 38px;
+        }
+
+        .editor-field-value .field-readonly {
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #6c757d;
+            word-break: break-all;
+        }
+
+        .editor-field-actions {
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .btn-update-field {
+            padding: 5px 14px;
+            background: #0a58ca;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-update-field:hover {
+            background: #084298;
+        }
+
+        .btn-update-field:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn-update-field.success {
+            background: #28a745;
+        }
     </style>
 </head>
 
@@ -518,18 +748,6 @@
                         <div class="spinner"></div>
                         กำลังโหลดฐานข้อมูล...
                     </div>
-                </div>
-            </div>
-
-            <!-- Collections List (shown after selecting a database) -->
-            <div class="collections-section" id="collections-section" style="display: none;">
-                <div class="collections-header">
-                    <h3>📄 Collections</h3>
-                    <button class="btn-del" id="btn-del-collections" onclick="deleteSelectedCollections()">🗑️
-                        Del</button>
-                </div>
-                <div id="collections-container">
-                    <!-- Collections will be loaded here -->
                 </div>
             </div>
         </div>
@@ -562,7 +780,7 @@
                             <label for="search-operator">เงื่อนไข</label>
                             <select id="search-operator">
                                 <option value="">เลือกเงื่อนไข</option>
-                                <option value="=">=  (เท่ากับ)</option>
+                                <option value="=">= (เท่ากับ)</option>
                                 <option value="like">like (คล้าย)</option>
                             </select>
                         </div>
@@ -579,6 +797,24 @@
 
                 <div class="data-content" id="data-content">
                     <div class="no-data">เลือกฐานข้อมูลจากรายการด้านซ้ายเพื่อเริ่มต้น</div>
+                </div>
+            </div>
+
+            <!-- Editor Section -->
+            <div class="editor-section" id="editor-section" style="display: none; height: 100%; flex-direction: column;">
+                <div class="data-header" style="margin-bottom: 10px;">
+                    <div>
+                        <div class="data-title" id="editor-title">แก้ไข Document</div>
+                        <div class="data-stats" id="editor-subtitle"></div>
+                    </div>
+                    <div class="data-header-right">
+                        <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
+                        <button class="btn btn-info" onclick="sortEditorFieldsZA()" style="margin-left: 5px;">🔡 Z-A</button>
+                        <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
+                    </div>
+                </div>
+                <div class="editor-fields-container" id="editor-fields-container">
+                    <!-- Field rows will be rendered here -->
                 </div>
             </div>
         </div>
@@ -605,17 +841,45 @@
         </div>
     </div>
 
+    <!-- Generic Alert Modal -->
+    <div class="generic-modal" id="alert-modal">
+        <div class="generic-modal-content">
+            <div class="generic-modal-header">
+                <div class="generic-modal-title" id="alert-modal-title">แจ้งเตือน</div>
+            </div>
+            <div class="generic-modal-message" id="alert-modal-message"></div>
+            <div class="generic-modal-actions">
+                <button class="btn btn-primary" id="alert-modal-ok">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Confirm Modal -->
+    <div class="generic-modal" id="confirm-modal">
+        <div class="generic-modal-content">
+            <div class="generic-modal-header">
+                <div class="generic-modal-title warning" id="confirm-modal-title">ยืนยันการดำเนินการ</div>
+            </div>
+            <div class="generic-modal-message" id="confirm-modal-message"></div>
+            <div class="generic-modal-actions">
+                <button class="btn btn-danger" id="confirm-modal-yes">ยืนยัน</button>
+                <button class="btn btn-secondary" id="confirm-modal-no">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript" src="/eel.js"></script>
     <script>
         let currentConnection = null;
         let currentDatabase = null;
         let currentCollection = null;
         let currentFields = [];
+        let currentEditingDocumentId = null;
+        let currentDocumentData = null;
 
         // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function () {
             loadConnectionInfo();
-            loadDatabases();
         });
 
         // โหลดข้อมูลการเชื่อมต่อ
@@ -629,6 +893,9 @@
                     <strong>${currentConnection.name}</strong><br>
                     ${currentConnection.host}:${currentConnection.port}
                 `;
+
+                // โหลดรายการฐานข้อมูลหลังจาก currentConnection ถูกเซ็ตแล้ว
+                loadDatabases();
             } else {
                 // ถ้าไม่มีข้อมูลการเชื่อมต่อ ให้กลับไปหน้าแรก
                 goBack();
@@ -637,11 +904,17 @@
 
         // โหลดรายการฐานข้อมูล
         async function loadDatabases() {
+            if (!currentConnection) return;
+
             try {
                 const result = await eel.get_databases(currentConnection.name)();
 
                 if (result.success) {
                     displayDatabases(result.databases);
+                    
+                    // ปิดหน้า Edit 
+                    document.getElementById('editor-section').style.display = 'none';
+                    document.querySelector('.data-section').style.display = 'block';
                 } else {
                     document.getElementById('databases-container').innerHTML = `
                         <div class="alert alert-danger">${result.message}</div>
@@ -649,7 +922,7 @@
                 }
             } catch (error) {
                 document.getElementById('databases-container').innerHTML = `
-                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล</div>
+                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล: ${error}</div>
                 `;
                 console.error('เกิดข้อผิดพลาด:', error);
             }
@@ -685,14 +958,10 @@
             // รีเซ็ต data section
             document.getElementById('data-title').textContent = `ฐานข้อมูล: ${databaseName}`;
             document.getElementById('data-stats').textContent = '';
-            document.getElementById('data-content').innerHTML = '<div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>';
             document.getElementById('search-form').style.display = 'none';
             document.getElementById('delete-btn').style.display = 'none';
 
-            // แสดง collections section
-            document.getElementById('collections-section').style.display = 'block';
-
-            // โหลด collections
+            // โหลด collections แสดงที่ content area
             await loadCollections();
         }
 
@@ -700,7 +969,7 @@
         async function loadCollections() {
             if (!currentDatabase) return;
 
-            const container = document.getElementById('collections-container');
+            const container = document.getElementById('data-content');
             container.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
@@ -724,22 +993,67 @@
 
         // แสดง collections
         function displayCollections(collections) {
-            const container = document.getElementById('collections-container');
+            const container = document.getElementById('data-content');
 
             if (collections.length === 0) {
-                container.innerHTML = '<div class="no-data" style="padding: 15px; font-size: 0.9em;">ไม่มี collections ในฐานข้อมูลนี้</div>';
-                document.getElementById('btn-del-collections').classList.remove('show');
+                container.innerHTML = '<div class="no-data">ไม่มี collections ในฐานข้อมูลนี้</div>';
                 return;
             }
 
-            const collectionsList = collections.map(collection => `
-                <div class="collection-item" onclick="selectCollection('${collection}')">
-                    <input type="checkbox" class="collection-checkbox" data-collection="${collection}" onclick="onCheckboxChange(event)">
-                    <span class="collection-name">📄 ${collection}</span>
+            document.getElementById('data-stats').textContent = `${collections.length} collections`;
+
+            const header = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <button class="btn btn-success" onclick="importCollection()">📥 Import</button>
+                        <button class="btn btn-primary" onclick="exportSelectedCollections()" style="margin-left: 5px;">📤 Export</button>
+                    </div>
+                    <button class="btn-del" id="btn-del-collections" onclick="deleteSelectedCollections()">🗑️ Del</button>
                 </div>
+            `;
+
+            const collectionsList = collections.map(collection => `
+                <tr style="cursor: pointer;" onclick="if(event.target.type !== 'checkbox') selectCollection('${collection}')">
+                    <td style="width: 50px; text-align: center;">
+                        <input type="checkbox" class="collection-checkbox" data-collection="${collection}" onclick="onCheckboxChange(event)">
+                    </td>
+                    <td>
+                        <span class="collection-name" style="display: flex; align-items: center; gap: 8px;">
+                            📄 ${collection}
+                        </span>
+                    </td>
+                </tr>
             `).join('');
 
-            container.innerHTML = collectionsList;
+            const tableHTML = `
+                <div style="overflow-y: auto; max-height: calc(100vh - 260px); border: 1px solid #e9ecef; border-radius: 5px;">
+                    <table class="data-table" style="background: white; margin: 0; width: 100%;">
+                        <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);">
+                            <tr>
+                                <th style="width: 50px; text-align: center;">
+                                    <input type="checkbox" id="select-all-collections" onclick="toggleAllCollections(event)" title="เลือกทั้งหมด">
+                                </th>
+                                <th>ชื่อ Collection</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${collectionsList}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = header + tableHTML;
+        }
+
+        // เลือก/ยกเลิกเลือก ทั้งหมด
+        function toggleAllCollections(event) {
+            const isChecked = event.target.checked;
+            const checkboxes = document.querySelectorAll('.collection-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateDelButton();
         }
 
         // จัดการเมื่อ checkbox เปลี่ยนสถานะ
@@ -765,36 +1079,35 @@
         async function deleteSelectedCollections() {
             const checked = document.querySelectorAll('.collection-checkbox:checked');
             if (checked.length === 0) {
-                alert('กรุณาเลือก collection ที่ต้องการลบ');
+                showAlert('กรุณาเลือก collection ที่ต้องการลบ', 'แจ้งเตือน', 'warning');
                 return;
             }
 
             const names = Array.from(checked).map(cb => cb.dataset.collection);
-            const confirmMsg = 'คุณแน่ใจหรือไม่ที่จะลบ ' + names.length + ' collections?\n\n' + names.join('\n') + '\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!';
+            const confirmMsg = `คุณแน่ใจหรือไม่ที่จะลบ ${names.length} collections?\n\n${names.join('\n')}\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!`;
 
-            if (!confirm(confirmMsg)) return;
+            if (!await showConfirm(confirmMsg, '⚠️ ยืนยันการลบ Collections')) return;
 
             try {
                 const result = await eel.drop_collections(currentConnection.name, currentDatabase, names)();
 
                 if (result.success) {
-                    alert(result.message);
+                    showAlert(result.message, 'สำเร็จ', 'success');
                     // รีเซ็ต current collection ถ้าถูกลบ
                     if (currentCollection && names.includes(currentCollection)) {
                         currentCollection = null;
                         document.getElementById('data-title').textContent = `ฐานข้อมูล: ${currentDatabase}`;
                         document.getElementById('data-stats').textContent = '';
-                        document.getElementById('data-content').innerHTML = '<div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>';
                         document.getElementById('search-form').style.display = 'none';
                         document.getElementById('delete-btn').style.display = 'none';
                     }
                     // โหลด collections ใหม่
                     await loadCollections();
                 } else {
-                    alert(result.message);
+                    showAlert(result.message, 'ผิดพลาด', 'error');
                 }
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการลบ collections');
+                showAlert('เกิดข้อผิดพลาดในการลบ collections', 'ผิดพลาด', 'error');
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
@@ -809,6 +1122,10 @@
                 event.currentTarget.classList.add('active');
 
                 currentCollection = collectionName;
+                
+                // ปิดหน้า Edit
+                document.getElementById('editor-section').style.display = 'none';
+                document.querySelector('.data-section').style.display = 'block';
 
                 // แสดง loading
                 document.getElementById('data-title').textContent = `${currentDatabase} / ${collectionName}`;
@@ -875,7 +1192,7 @@
                         </thead>
                         <tbody>
                             ${data.map(doc => `
-                                <tr>
+                                <tr ondblclick="editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
                                     ${fields.map(field => `<td>${formatValue(doc[field])}</td>`).join('')}
                                 </tr>
                             `).join('')}
@@ -887,14 +1204,217 @@
             }
         }
 
+
+
+        // เปิด Editor เพื่อแก้ไข Document
+        async function editDocument(documentId) {
+            try {
+                // สลับ UI ทันที
+                document.querySelector('.data-section').style.display = 'none';
+                const editorSection = document.getElementById('editor-section');
+                editorSection.style.display = 'flex';
+                
+                // แสดง loading ใน editor container
+                document.getElementById('editor-fields-container').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        กำลังโหลดข้อมูล Document...
+                    </div>
+                `;
+
+                // เรียก Python backend เพื่อดึงข้อมูลเต็มของ Document นี้
+                const result = await eel.get_document(currentConnection.name, currentDatabase, currentCollection, documentId)();
+
+                if (result.success) {
+                    currentEditingDocumentId = documentId;
+                    
+                    document.getElementById('editor-subtitle').textContent = `Collection: ${currentCollection} | ID: ${documentId}`;
+                    
+                    // Parse JSON แล้วสร้าง field rows
+                    currentDocumentData = JSON.parse(result.document_json);
+                    renderEditorFields(currentDocumentData);
+                    
+                } else {
+                    document.getElementById('editor-fields-container').innerHTML = `
+                        <div class="alert alert-danger">${result.message}</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการโหลด Document:', error);
+                document.getElementById('editor-fields-container').innerHTML = `
+                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการดึงข้อมูล Document</div>
+                `;
+            }
+        }
+
+        // Render field rows ใน Editor
+        function renderEditorFields(docData) {
+            const container = document.getElementById('editor-fields-container');
+            let html = '';
+
+            for (const [key, value] of Object.entries(docData)) {
+                const isId = (key === '_id');
+                const valueStr = (typeof value === 'object' && value !== null)
+                    ? JSON.stringify(value, null, 2)
+                    : String(value ?? '');
+                const isMultiline = (typeof value === 'object' && value !== null) || valueStr.length > 80;
+                const escapedValue = valueStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const escapedKey = key.replace(/'/g, "'").replace(/"/g, '&quot;');
+
+                html += `<div class="editor-field-row">`;
+                html += `  <div class="editor-field-key" title="${key}">${key}</div>`;
+                html += `  <div class="editor-field-value">`;
+
+                if (isId) {
+                    // _id เป็น read-only
+                    html += `<div class="field-readonly">${escapedValue}</div>`;
+                } else if (isMultiline) {
+                    html += `<textarea id="field-${escapedKey}" rows="4">${escapedValue}</textarea>`;
+                } else {
+                    html += `<input type="text" id="field-${escapedKey}" value="${escapedValue}">`;
+                }
+
+                html += `  </div>`;
+                html += `  <div class="editor-field-actions">`;
+
+                if (!isId) {
+                    html += `<button class="btn-update-field" onclick="updateField('${escapedKey}', this)">💾 Update</button>`;
+                }
+
+                html += `  </div>`;
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // เรียงลำดับฟิลด์ A-Z
+        function sortEditorFields() {
+            if (!currentDocumentData) return;
+            
+            // สร้าง object ใหม่ที่เรียงลำดับ key แล้ว
+            const sortedData = {};
+            // _id ควรอยู่บนสุดเสมอ
+            if (currentDocumentData._id) {
+                sortedData._id = currentDocumentData._id;
+            }
+            
+            Object.keys(currentDocumentData)
+                .filter(key => key !== '_id')
+                .sort()
+                .forEach(key => {
+                    sortedData[key] = currentDocumentData[key];
+                });
+            
+            // เก็บข้อมูลที่เรียงแล้วไว้ใช้ต่อ
+            currentDocumentData = sortedData;
+            renderEditorFields(currentDocumentData);
+        }
+
+        // เรียงลำดับฟิลด์ Z-A
+        function sortEditorFieldsZA() {
+            if (!currentDocumentData) return;
+            
+            const sortedData = {};
+            // _id ควรอยู่บนสุดเสมอ
+            if (currentDocumentData._id) {
+                sortedData._id = currentDocumentData._id;
+            }
+            
+            Object.keys(currentDocumentData)
+                .filter(key => key !== '_id')
+                .sort()
+                .reverse()
+                .forEach(key => {
+                    sortedData[key] = currentDocumentData[key];
+                });
+            
+            currentDocumentData = sortedData;
+            renderEditorFields(currentDocumentData);
+        }
+
+        // อัปเดตเฉพาะ field เดียว
+        async function updateField(fieldKey, btnElement) {
+            if (!currentEditingDocumentId) return;
+
+            const inputEl = document.getElementById('field-' + fieldKey);
+            if (!inputEl) return;
+
+            const rawValue = inputEl.value;
+
+            // ลองแปลง JSON ก่อน ถ้าไม่ได้ก็ใช้เป็น string
+            let valueJsonStr;
+            try {
+                JSON.parse(rawValue);
+                valueJsonStr = rawValue;
+            } catch {
+                // เป็น string ธรรมดา
+                valueJsonStr = JSON.stringify(rawValue);
+            }
+
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = '⏳...';
+            btnElement.disabled = true;
+
+            try {
+                const result = await eel.update_document_field(
+                    currentConnection.name,
+                    currentDatabase,
+                    currentCollection,
+                    currentEditingDocumentId,
+                    fieldKey,
+                    valueJsonStr
+                )();
+
+                if (result.success) {
+                    // อัปเดตข้อมูลใน currentDocumentData ด้วย
+                    try {
+                        currentDocumentData[fieldKey] = JSON.parse(valueJsonStr);
+                    } catch {
+                        currentDocumentData[fieldKey] = rawValue;
+                    }
+
+                    btnElement.innerHTML = '✅';
+                    btnElement.classList.add('success');
+                    setTimeout(() => {
+                        btnElement.innerHTML = originalText;
+                        btnElement.classList.remove('success');
+                        btnElement.disabled = false;
+                    }, 1500);
+                } else {
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                    showAlert('ล้มเหลว: ' + result.message, 'ผิดพลาด', 'error');
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการอัปเดต field:', error);
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+                showAlert('เกิดข้อผิดพลาด: ' + String(error.message || error), 'ผิดพลาด', 'error');
+            }
+        }
+
+        // ปิด Editor
+        function closeEditor() {
+            document.getElementById('editor-section').style.display = 'none';
+            document.querySelector('.data-section').style.display = 'block';
+            currentEditingDocumentId = null;
+            currentDocumentData = null;
+            document.getElementById('editor-fields-container').innerHTML = '';
+        }
+
         // จัดรูปแบบค่า
         function formatValue(value) {
             if (value === null || value === undefined) {
                 return '<em>null</em>';
             }
 
+            if (Array.isArray(value)) {
+                return '<span style="color: #6c757d; font-style: italic;">[array]</span>';
+            }
+
             if (typeof value === 'object') {
-                return `<div class="json-view">${JSON.stringify(value, null, 2)}</div>`;
+                return '<span style="color: #6c757d; font-style: italic;">[object]</span>';
             }
 
             if (typeof value === 'string' && value.length > 100) {
@@ -938,7 +1458,7 @@
             const value = document.getElementById('search-value').value;
 
             if (!field || !operator || !value) {
-                alert('กรุณากรอกข้อมูลการค้นหาให้ครบถ้วน');
+                showAlert('กรุณากรอกข้อมูลการค้นหาให้ครบถ้วน', 'แจ้งเตือน', 'warning');
                 return;
             }
 
@@ -1010,10 +1530,61 @@
             }
         }
 
+        // นำเข้า collection จากไฟล์ JSON
+        async function importCollection() {
+            if (!currentConnection || !currentDatabase) {
+                showAlert('กรุณาเลือกฐานข้อมูลก่อน', 'แจ้งเตือน', 'warning');
+                return;
+            }
+
+            try {
+                const result = await eel.import_collection(currentConnection.name, currentDatabase)();
+
+                if (result.success) {
+                    showAlert(result.message, 'นำเข้าสำเร็จ', 'success');
+                    // โหลด collections ใหม่
+                    await loadCollections();
+                } else {
+                    if (result.message !== 'ไม่ได้เลือกไฟล์') {
+                        showAlert(result.message, 'แจ้งเตือน', 'error');
+                    }
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการนำเข้า collection', 'ผิดพลาด', 'error');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+
+        // ส่งออก collections ที่เลือกเป็นไฟล์ JSON
+        async function exportSelectedCollections() {
+            const checked = document.querySelectorAll('.collection-checkbox:checked');
+            if (checked.length === 0) {
+                showAlert('กรุณาเลือก collection ที่ต้องการส่งออก', 'แจ้งเตือน', 'warning');
+                return;
+            }
+
+            const names = Array.from(checked).map(cb => cb.dataset.collection);
+
+            try {
+                const result = await eel.export_collections(currentConnection.name, currentDatabase, names)();
+
+                if (result.success) {
+                    showAlert(result.message, 'ส่งออกสำเร็จ', 'success');
+                } else {
+                    if (result.message !== 'ยกเลิกการส่งออก' && result.message !== 'ไม่ได้เลือกโฟลเดอร์') {
+                        showAlert(result.message, 'ผิดพลาด', 'error');
+                    }
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการส่งออก collections', 'ผิดพลาด', 'error');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+
         // กลับไปหน้าแรก
         function goBack() {
             sessionStorage.removeItem('currentConnection');
-            window.location.href = 'index.html';
+            window.location.href = 'index.html?v=' + new Date().getTime();
         }
 
         // แสดง modal ล้างข้อมูล
@@ -1038,7 +1609,7 @@
             const confirmCollectionName = document.getElementById('confirm-collection-name').value.trim();
 
             if (!confirmCollectionName) {
-                alert('กรุณากรอกชื่อ collection เพื่อยืนยัน');
+                showAlert('กรุณากรอกชื่อ collection เพื่อยืนยัน', 'แจ้งเตือน', 'warning');
                 return;
             }
 
@@ -1051,15 +1622,15 @@
                 )();
 
                 if (result.success) {
-                    alert(result.message);
+                    showAlert(result.message, 'สำเร็จ', 'success');
                     hideDeleteModal();
                     // โหลดข้อมูลใหม่
                     await selectCollection(currentCollection);
                 } else {
-                    alert(result.message);
+                    showAlert(result.message, 'ผิดพลาด', 'error');
                 }
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการล้างข้อมูล');
+                showAlert('เกิดข้อผิดพลาดในการล้างข้อมูล', 'ผิดพลาด', 'error');
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
@@ -1079,6 +1650,57 @@
                 }
             });
         });
+
+        // ------------------ Alert & Confirm Logic ------------------ //
+        function showAlert(message, title = 'แจ้งเตือน', type = 'info') {
+            const modal = document.getElementById('alert-modal');
+            const titleEl = document.getElementById('alert-modal-title');
+            const msgEl = document.getElementById('alert-modal-message');
+            const okBtn = document.getElementById('alert-modal-ok');
+
+            titleEl.textContent = title;
+            titleEl.className = 'generic-modal-title ' + type;
+            msgEl.textContent = message;
+
+            modal.classList.add('show');
+
+            // ใช้ Promise สำหรับ wait ให้คนคลิก (แม้ไม่ต้องการค่าส่งกลับ มักมีประโยชน์)
+            return new Promise(resolve => {
+                const closeAlert = () => {
+                    modal.classList.remove('show');
+                    okBtn.removeEventListener('click', closeAlert);
+                    resolve();
+                };
+                okBtn.addEventListener('click', closeAlert);
+            });
+        }
+
+        function showConfirm(message, title = 'ยืนยันการดำเนินการ') {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-modal-title');
+            const msgEl = document.getElementById('confirm-modal-message');
+            const yesBtn = document.getElementById('confirm-modal-yes');
+            const noBtn = document.getElementById('confirm-modal-no');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+
+            modal.classList.add('show');
+
+            return new Promise(resolve => {
+                const cleanup = () => {
+                    modal.classList.remove('show');
+                    yesBtn.removeEventListener('click', onYes);
+                    noBtn.removeEventListener('click', onNo);
+                };
+
+                const onYes = () => { cleanup(); resolve(true); };
+                const onNo = () => { cleanup(); resolve(false); };
+
+                yesBtn.addEventListener('click', onYes);
+                noBtn.addEventListener('click', onNo);
+            });
+        }
     </script>
 </body>
 

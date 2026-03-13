@@ -611,6 +611,29 @@ class HTMLGenerator:
             background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom scrollbar for a premium look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+            border: 2px solid #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
         }
 
         .header {
@@ -696,7 +719,8 @@ class HTMLGenerator:
 
         .main-container {
             display: flex;
-            height: calc(100vh - 80px);
+            flex: 1;
+            min-height: 0;
         }
 
         .sidebar {
@@ -1037,8 +1061,10 @@ class HTMLGenerator:
             background: white;
             padding: 15px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .search-row {
@@ -1084,10 +1110,10 @@ class HTMLGenerator:
 
         .data-content {
             flex: 1;
-            overflow: auto;
+            overflow-y: auto;
+            overflow-x: auto;
             padding: 20px;
             min-height: 0;
-            display: block;
         }
 
         .data-table {
@@ -1097,15 +1123,22 @@ class HTMLGenerator:
 
         .data-table th,
         .data-table td {
-            padding: 12px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .data-table th {
             background: #f8f9fa;
-            font-weight: bold;
+            font-weight: 600;
             color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .data-table tr:hover {
@@ -1186,24 +1219,30 @@ class HTMLGenerator:
 
         .editor-field-row {
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            background: #fafafa;
+            transition: background 0.15s;
         }
 
-        .editor-field-row:last-child {
-            border-bottom: none;
+        .editor-field-row:hover {
+            background: #f0f4ff;
+            border-color: #c8d8ff;
         }
 
         .editor-field-key {
-            min-width: 160px;
-            max-width: 200px;
             font-weight: 600;
-            color: #333;
-            padding-top: 8px;
-            font-size: 0.9em;
-            word-break: break-all;
+            color: #0a58ca;
+            font-size: 0.85em;
+            word-break: break-word;
+            letter-spacing: 0.02em;
+            width: 150px;
+            min-width: 150px;
             flex-shrink: 0;
         }
 
@@ -1215,12 +1254,13 @@ class HTMLGenerator:
         .editor-field-value input,
         .editor-field-value textarea {
             width: 100%;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
             transition: border-color 0.3s ease;
+            box-sizing: border-box;
         }
 
         .editor-field-value input:focus,
@@ -1232,11 +1272,11 @@ class HTMLGenerator:
 
         .editor-field-value textarea {
             resize: vertical;
-            min-height: 60px;
+            min-height: 38px;
         }
 
         .editor-field-value .field-readonly {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 4px;
@@ -1247,12 +1287,12 @@ class HTMLGenerator:
         }
 
         .editor-field-actions {
+            display: flex;
             flex-shrink: 0;
-            padding-top: 4px;
         }
 
         .btn-update-field {
-            padding: 6px 14px;
+            padding: 5px 14px;
             background: #0a58ca;
             color: white;
             border: none;
@@ -1363,6 +1403,7 @@ class HTMLGenerator:
                     </div>
                     <div class="data-header-right">
                         <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
+                        <button class="btn btn-info" onclick="sortEditorFieldsZA()" style="margin-left: 5px;">🔡 Z-A</button>
                         <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
                     </div>
                 </div>
@@ -1860,6 +1901,28 @@ class HTMLGenerator:
                 });
             
             // เก็บข้อมูลที่เรียงแล้วไว้ใช้ต่อ
+            currentDocumentData = sortedData;
+            renderEditorFields(currentDocumentData);
+        }
+
+        // เรียงลำดับฟิลด์ Z-A
+        function sortEditorFieldsZA() {
+            if (!currentDocumentData) return;
+            
+            const sortedData = {};
+            // _id ควรอยู่บนสุดเสมอ
+            if (currentDocumentData._id) {
+                sortedData._id = currentDocumentData._id;
+            }
+            
+            Object.keys(currentDocumentData)
+                .filter(key => key !== '_id')
+                .sort()
+                .reverse()
+                .forEach(key => {
+                    sortedData[key] = currentDocumentData[key];
+                });
+            
             currentDocumentData = sortedData;
             renderEditorFields(currentDocumentData);
         }

@@ -17,6 +17,29 @@
             background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom scrollbar for a premium look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+            border: 2px solid #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
         }
 
         .header {
@@ -102,7 +125,8 @@
 
         .main-container {
             display: flex;
-            height: calc(100vh - 80px);
+            flex: 1;
+            min-height: 0;
         }
 
         .sidebar {
@@ -443,8 +467,10 @@
             background: white;
             padding: 15px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .search-row {
@@ -490,10 +516,10 @@
 
         .data-content {
             flex: 1;
-            overflow: auto;
+            overflow-y: auto;
+            overflow-x: auto;
             padding: 20px;
             min-height: 0;
-            display: block;
         }
 
         .data-table {
@@ -503,15 +529,22 @@
 
         .data-table th,
         .data-table td {
-            padding: 12px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .data-table th {
             background: #f8f9fa;
-            font-weight: bold;
+            font-weight: 600;
             color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .data-table tr:hover {
@@ -776,6 +809,7 @@
                     </div>
                     <div class="data-header-right">
                         <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
+                        <button class="btn btn-info" onclick="sortEditorFieldsZA()" style="margin-left: 5px;">🔡 Z-A</button>
                         <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
                     </div>
                 </div>
@@ -1273,6 +1307,28 @@
                 });
             
             // เก็บข้อมูลที่เรียงแล้วไว้ใช้ต่อ
+            currentDocumentData = sortedData;
+            renderEditorFields(currentDocumentData);
+        }
+
+        // เรียงลำดับฟิลด์ Z-A
+        function sortEditorFieldsZA() {
+            if (!currentDocumentData) return;
+            
+            const sortedData = {};
+            // _id ควรอยู่บนสุดเสมอ
+            if (currentDocumentData._id) {
+                sortedData._id = currentDocumentData._id;
+            }
+            
+            Object.keys(currentDocumentData)
+                .filter(key => key !== '_id')
+                .sort()
+                .reverse()
+                .forEach(key => {
+                    sortedData[key] = currentDocumentData[key];
+                });
+            
             currentDocumentData = sortedData;
             renderEditorFields(currentDocumentData);
         }
