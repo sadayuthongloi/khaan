@@ -428,6 +428,9 @@
             line-height: 1.5;
             margin-bottom: 25px;
             white-space: pre-line;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
 
         .generic-modal-actions {
@@ -836,7 +839,6 @@
         // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function () {
             loadConnectionInfo();
-            loadDatabases();
         });
 
         // โหลดข้อมูลการเชื่อมต่อ
@@ -850,6 +852,9 @@
                     <strong>${currentConnection.name}</strong><br>
                     ${currentConnection.host}:${currentConnection.port}
                 `;
+
+                // โหลดรายการฐานข้อมูลหลังจาก currentConnection ถูกเซ็ตแล้ว
+                loadDatabases();
             } else {
                 // ถ้าไม่มีข้อมูลการเชื่อมต่อ ให้กลับไปหน้าแรก
                 goBack();
@@ -858,6 +863,8 @@
 
         // โหลดรายการฐานข้อมูล
         async function loadDatabases() {
+            if (!currentConnection) return;
+
             try {
                 const result = await eel.get_databases(currentConnection.name)();
 
@@ -874,7 +881,7 @@
                 }
             } catch (error) {
                 document.getElementById('databases-container').innerHTML = `
-                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล</div>
+                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล: ${error}</div>
                 `;
                 console.error('เกิดข้อผิดพลาด:', error);
             }
@@ -1036,7 +1043,7 @@
             }
 
             const names = Array.from(checked).map(cb => cb.dataset.collection);
-            const confirmMsg = 'คุณแน่ใจหรือไม่ที่จะลบ ' + names.length + ' collections?\n\n' + names.join('\n') + '\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!';
+            const confirmMsg = `คุณแน่ใจหรือไม่ที่จะลบ ${names.length} collections?\n\n${names.join('\n')}\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!`;
 
             if (!await showConfirm(confirmMsg, '⚠️ ยืนยันการลบ Collections')) return;
 
@@ -1211,7 +1218,7 @@
                     : String(value ?? '');
                 const isMultiline = (typeof value === 'object' && value !== null) || valueStr.length > 80;
                 const escapedValue = valueStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                const escapedKey = key.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const escapedKey = key.replace(/'/g, "'").replace(/"/g, '&quot;');
 
                 html += `<div class="editor-field-row">`;
                 html += `  <div class="editor-field-key" title="${key}">${key}</div>`;

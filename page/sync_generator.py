@@ -15,16 +15,20 @@ with open(generator_path, 'r', encoding='utf-8') as f:
 # Find the start and end of _get_main_html_content return string
 start_idx = -1
 end_idx = -1
-
+in_method = False
 for i, line in enumerate(generator_lines):
     if 'def _get_main_html_content(self) -> str:' in line:
-        start_idx = i + 2 # Skip def and return line if they are separate
-    # Actually it's easier to find the return \"\"\"
-    if 'return """<!DOCTYPE html>' in line:
+        in_method = True
+    if in_method and 'return """' in line:
         start_idx = i
-    if '</html>"""' in line:
-        end_idx = i
-        break
+    if in_method and '</html>' in line:
+        # Look ahead for the closing quotes
+        if i + 1 < len(generator_lines) and '"""' in generator_lines[i+1]:
+            end_idx = i + 1
+            break
+        elif '"""' in line:
+            end_idx = i
+            break
 
 if start_idx != -1 and end_idx != -1:
     new_method = [

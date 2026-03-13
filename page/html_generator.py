@@ -592,14 +592,9 @@ class HTMLGenerator:
     
     def _get_main_html_content(self) -> str:
         """สร้างเนื้อหา main.html"""
-        # อ่านจากไฟล์ main.html ที่มีอยู่แล้ว
-        main_html_path = os.path.join(self.html_dir, 'main.html')
-        if os.path.exists(main_html_path):
-            with open(main_html_path, 'r', encoding='utf-8') as f:
-                return f.read()
-        return """
-<!DOCTYPE html>
+        return """<!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -610,14 +605,14 @@ class HTMLGenerator:
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
         }
-        
+
         .header {
             background: #f4f6f9;
             color: white;
@@ -625,24 +620,24 @@ class HTMLGenerator:
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
-        
+
         .header h1 {
             font-size: 1.8em;
         }
-        
+
         .connection-info {
             display: flex;
             align-items: center;
             gap: 20px;
         }
-        
+
         .connection-details {
             font-size: 0.9em;
             opacity: 0.9;
         }
-        
+
         .btn {
             padding: 8px 16px;
             border: none;
@@ -653,55 +648,66 @@ class HTMLGenerator:
             text-decoration: none;
             display: inline-block;
         }
-        
+
         .btn-primary {
             background: #0a58ca;
             color: white;
         }
-        
+
         .btn-primary:hover {
-            background: #0b5ed7;
+            background: #084298;
         }
-        
+
         .btn-success {
             background: #28a745;
             color: white;
         }
-        
+
         .btn-success:hover {
             background: #218838;
         }
-        
+
         .btn-danger {
             background: #dc3545;
             color: white;
         }
-        
+
         .btn-danger:hover {
             background: #c82333;
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: white;
         }
-        
+
         .btn-secondary:hover {
             background: #5a6268;
         }
-        
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
         .main-container {
             display: flex;
             height: calc(100vh - 80px);
         }
-        
+
         .sidebar {
             width: 300px;
             background: white;
             border-right: 1px solid #e9ecef;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
-        
+
         .content {
             flex: 1;
             display: flex;
@@ -709,39 +715,71 @@ class HTMLGenerator:
             overflow: hidden;
             min-height: 0;
         }
-        
-        .database-section {
-            background: white;
-            padding: 20px;
+
+        /* Database list section */
+        .databases-section {
+            padding: 15px;
             border-bottom: 1px solid #e9ecef;
         }
-        
-        .database-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .database-name {
-            font-size: 1.2em;
-            font-weight: bold;
+
+        .databases-section h3 {
             color: #333;
+            margin-bottom: 10px;
+            font-size: 1em;
         }
-        
-        .collections-section {
+
+        .database-item {
+            padding: 10px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .database-item:hover {
+            background: #e9ecef;
+            border-color: #0a58ca;
+        }
+
+        .database-item.active {
+            background: #0a58ca;
+            color: white;
+            border-color: #0a58ca;
+        }
+
+        .database-name-label {
             flex: 1;
-            overflow-y: auto;
-            padding: 20px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
         }
-        
+
+        /* Collections grid in content area */
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 10px 0;
+        }
+
         .collections-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
-        
+
+        .collections-header h3 {
+            color: #333;
+            font-size: 1em;
+        }
+
         .btn-del {
             padding: 4px 12px;
             background: #dc3545;
@@ -754,39 +792,39 @@ class HTMLGenerator:
             transition: all 0.3s ease;
             display: none;
         }
-        
+
         .btn-del:hover {
             background: #c82333;
         }
-        
+
         .btn-del.show {
             display: inline-block;
         }
-        
+
         .collection-item {
-            padding: 12px 15px;
+            padding: 15px;
             border: 1px solid #e9ecef;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #f8f9fa;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 0.95em;
         }
-        
+
         .collection-item:hover {
             background: #e9ecef;
             border-color: #0a58ca;
         }
-        
+
         .collection-item.active {
             background: #0a58ca;
             color: white;
             border-color: #0a58ca;
         }
-        
+
         .collection-checkbox {
             width: 16px;
             height: 16px;
@@ -794,14 +832,14 @@ class HTMLGenerator:
             accent-color: #0a58ca;
             flex-shrink: 0;
         }
-        
+
         .collection-name {
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
+
         .data-section {
             flex: 1;
             background: white;
@@ -813,7 +851,7 @@ class HTMLGenerator:
             flex-direction: column;
             min-height: 0;
         }
-        
+
         .data-header {
             padding: 20px;
             border-bottom: 1px solid #e9ecef;
@@ -822,25 +860,25 @@ class HTMLGenerator:
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .data-title {
             font-size: 1.3em;
             font-weight: bold;
             color: #333;
             margin-bottom: 10px;
         }
-        
+
         .data-stats {
             color: #666;
             font-size: 0.9em;
         }
-        
+
         .data-header-right {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
+
         .delete-modal {
             position: fixed;
             top: 0;
@@ -853,44 +891,44 @@ class HTMLGenerator:
             align-items: center;
             z-index: 1000;
         }
-        
+
         .delete-modal-content {
             background: white;
             border-radius: 15px;
             padding: 30px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .delete-modal-header {
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         .delete-modal-title {
             font-size: 1.5em;
             font-weight: bold;
             color: #dc3545;
             margin-bottom: 10px;
         }
-        
+
         .delete-modal-message {
             color: #666;
             line-height: 1.5;
         }
-        
+
         .delete-modal-form {
             margin-bottom: 25px;
         }
-        
+
         .delete-modal-form label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
             color: #333;
         }
-        
+
         .delete-modal-form input {
             width: 100%;
             padding: 12px;
@@ -899,54 +937,129 @@ class HTMLGenerator:
             font-size: 16px;
             transition: border-color 0.3s ease;
         }
-        
+
         .delete-modal-form input:focus {
             outline: none;
             border-color: #dc3545;
         }
-        
+
         .delete-modal-actions {
             display: flex;
             gap: 15px;
             justify-content: center;
         }
-        
+
         .btn-warning {
             background: #ffc107;
             color: #212529;
         }
-        
+
         .btn-warning:hover {
             background: #e0a800;
         }
-        
+
+        /* Generic Modals (Alert & Confirm) */
+        .generic-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .generic-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .generic-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .generic-modal.show .generic-modal-content {
+            transform: translateY(0);
+        }
+
+        .generic-modal-header {
+            margin-bottom: 15px;
+        }
+
+        .generic-modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .generic-modal-title.error {
+            color: #dc3545;
+        }
+
+        .generic-modal-title.success {
+            color: #28a745;
+        }
+
+        .generic-modal-title.warning {
+            color: #ffc107;
+        }
+
+        .generic-modal-message {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            white-space: pre-line;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .generic-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
         .search-form {
             background: white;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
-        
+
         .search-row {
             display: flex;
             gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
-        
+
         .search-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
-        
+
         .search-group label {
             font-size: 0.9em;
             font-weight: bold;
             color: #333;
         }
-        
+
         .search-group select,
         .search-group input {
             padding: 8px 12px;
@@ -955,20 +1068,20 @@ class HTMLGenerator:
             font-size: 14px;
             min-width: 120px;
         }
-        
+
         .search-group select:focus,
         .search-group input:focus {
             outline: none;
             border-color: #0a58ca;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
-        
+
         .search-actions {
             display: flex;
             gap: 10px;
             align-items: end;
         }
-        
+
         .data-content {
             flex: 1;
             overflow: auto;
@@ -976,29 +1089,29 @@ class HTMLGenerator:
             min-height: 0;
             display: block;
         }
-        
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
         }
-        
+
         .data-table th,
         .data-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
         }
-        
+
         .data-table th {
             background: #f8f9fa;
             font-weight: bold;
             color: #333;
         }
-        
+
         .data-table tr:hover {
             background: #f8f9fa;
         }
-        
+
         .json-view {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -1009,38 +1122,38 @@ class HTMLGenerator:
             white-space: pre-wrap;
             overflow-x: auto;
         }
-        
+
         .no-data {
             text-align: center;
             color: #666;
             padding: 40px;
             font-size: 1.1em;
         }
-        
+
         .alert {
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
         }
-        
+
         .alert-success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
+
         .alert-danger {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
+
         .loading {
             text-align: center;
             padding: 40px;
             color: #666;
         }
-        
+
         .spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #0a58ca;
@@ -1050,13 +1163,122 @@ class HTMLGenerator:
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Editor Field Rows */
+        .editor-fields-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+        }
+
+        .editor-field-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .editor-field-row:last-child {
+            border-bottom: none;
+        }
+
+        .editor-field-key {
+            min-width: 160px;
+            max-width: 200px;
+            font-weight: 600;
+            color: #333;
+            padding-top: 8px;
+            font-size: 0.9em;
+            word-break: break-all;
+            flex-shrink: 0;
+        }
+
+        .editor-field-value {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .editor-field-value input,
+        .editor-field-value textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            transition: border-color 0.3s ease;
+        }
+
+        .editor-field-value input:focus,
+        .editor-field-value textarea:focus {
+            outline: none;
+            border-color: #0a58ca;
+            box-shadow: 0 0 0 2px rgba(10, 88, 202, 0.15);
+        }
+
+        .editor-field-value textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .editor-field-value .field-readonly {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #6c757d;
+            word-break: break-all;
+        }
+
+        .editor-field-actions {
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+
+        .btn-update-field {
+            padding: 6px 14px;
+            background: #0a58ca;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-update-field:hover {
+            background: #084298;
+        }
+
+        .btn-update-field:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn-update-field.success {
+            background: #28a745;
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div>
@@ -1069,49 +1291,36 @@ class HTMLGenerator:
         </div>
         <button class="btn btn-danger" onclick="goBack()">← กลับ</button>
     </div>
-    
+
     <div class="main-container">
         <div class="sidebar">
-            <div class="database-section">
-                <div class="database-info">
-                    <div class="database-name" id="database-name">
-                        <!-- ชื่อฐานข้อมูลจะแสดงที่นี่ -->
-                    </div>
-                    <button class="btn btn-success" id="create-db-btn" onclick="createDatabase()" style="display: none;">
-                        สร้างฐานข้อมูล
-                    </button>
-                </div>
-                <div id="database-alert"></div>
-            </div>
-            
-            <div class="collections-section">
-                <div class="collections-header">
-                    <h3>Collections</h3>
-                    <button class="btn-del" id="btn-del-collections" onclick="deleteSelectedCollections()">🗑️ Del</button>
-                </div>
-                <div id="collections-container">
+            <!-- Databases List -->
+            <div class="databases-section">
+                <h3>🗄️ ฐานข้อมูล</h3>
+                <div id="databases-container">
                     <div class="loading">
                         <div class="spinner"></div>
-                        กำลังโหลด collections...
+                        กำลังโหลดฐานข้อมูล...
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="content">
             <div class="data-section">
                 <div class="data-header">
                     <div>
-                        <div class="data-title" id="data-title">เลือก Collection เพื่อดูข้อมูล</div>
+                        <div class="data-title" id="data-title">เลือกฐานข้อมูลและ Collection เพื่อดูข้อมูล</div>
                         <div class="data-stats" id="data-stats"></div>
                     </div>
                     <div class="data-header-right">
-                        <button class="btn btn-danger" id="delete-btn" onclick="showDeleteModal()" style="display: none;">
+                        <button class="btn btn-danger" id="delete-btn" onclick="showDeleteModal()"
+                            style="display: none;">
                             🗑️ ล้างข้อมูล
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Search Form -->
                 <div class="search-form" id="search-form" style="display: none;">
                     <div class="search-row">
@@ -1135,30 +1344,30 @@ class HTMLGenerator:
                         </div>
                         <div class="search-actions">
                             <button class="btn btn-primary" onclick="performSearch()">🔍 ค้นหา</button>
-                            <button class="btn btn-secondary" onclick="clearSearch()">🗑️ ล้าง</button>
+                            <button class="btn btn-secondary" onclick="clearSearch()">🗑️ ล้างการค้นหา</button>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="data-content" id="data-content">
-                    <div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>
+                    <div class="no-data">เลือกฐานข้อมูลจากรายการด้านซ้ายเพื่อเริ่มต้น</div>
                 </div>
             </div>
 
             <!-- Editor Section -->
-            <div class="editor-section" id="editor-section" style="display: none; height: 100%; display: flex; flex-direction: column;">
+            <div class="editor-section" id="editor-section" style="display: none; height: 100%; flex-direction: column;">
                 <div class="data-header" style="margin-bottom: 10px;">
                     <div>
                         <div class="data-title" id="editor-title">แก้ไข Document</div>
                         <div class="data-stats" id="editor-subtitle"></div>
                     </div>
                     <div class="data-header-right">
-                        <button class="btn btn-success" onclick="saveDocument(this)">💾 บันทึก</button>
+                        <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
                         <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
                     </div>
                 </div>
-                <div style="flex: 1; display: flex; flex-direction: column; background: white; border: 1px solid #e9ecef; border-radius: 5px; padding: 15px;">
-                    <textarea id="document-json-editor" style="width: 100%; height: 100%; font-family: 'Courier New', monospace; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
+                <div class="editor-fields-container" id="editor-fields-container">
+                    <!-- Field rows will be rendered here -->
                 </div>
             </div>
         </div>
@@ -1185,92 +1394,227 @@ class HTMLGenerator:
         </div>
     </div>
 
+    <!-- Generic Alert Modal -->
+    <div class="generic-modal" id="alert-modal">
+        <div class="generic-modal-content">
+            <div class="generic-modal-header">
+                <div class="generic-modal-title" id="alert-modal-title">แจ้งเตือน</div>
+            </div>
+            <div class="generic-modal-message" id="alert-modal-message"></div>
+            <div class="generic-modal-actions">
+                <button class="btn btn-primary" id="alert-modal-ok">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Confirm Modal -->
+    <div class="generic-modal" id="confirm-modal">
+        <div class="generic-modal-content">
+            <div class="generic-modal-header">
+                <div class="generic-modal-title warning" id="confirm-modal-title">ยืนยันการดำเนินการ</div>
+            </div>
+            <div class="generic-modal-message" id="confirm-modal-message"></div>
+            <div class="generic-modal-actions">
+                <button class="btn btn-danger" id="confirm-modal-yes">ยืนยัน</button>
+                <button class="btn btn-secondary" id="confirm-modal-no">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript" src="/eel.js"></script>
     <script>
         let currentConnection = null;
+        let currentDatabase = null;
         let currentCollection = null;
         let currentFields = [];
-        
+        let currentEditingDocumentId = null;
+        let currentDocumentData = null;
+
         // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadConnectionInfo();
-            loadCollections();
-            
-            // ซ่อนหน้า Editor ถ้าเปิดอยู่ตอนเริ่มต้น
-            const editorSection = document.getElementById('editor-section');
-            if (editorSection) {
-                editorSection.style.display = 'none';
-            }
         });
-        
+
         // โหลดข้อมูลการเชื่อมต่อ
         function loadConnectionInfo() {
             const connectionData = sessionStorage.getItem('currentConnection');
             if (connectionData) {
                 currentConnection = JSON.parse(connectionData);
-                
+
                 // แสดงรายละเอียดการเชื่อมต่อ
                 document.getElementById('connection-details').innerHTML = `
                     <strong>${currentConnection.name}</strong><br>
                     ${currentConnection.host}:${currentConnection.port}
                 `;
-                
-                // แสดงชื่อฐานข้อมูล
-                document.getElementById('database-name').textContent = currentConnection.database;
-                
-                // ตรวจสอบว่าฐานข้อมูลมีอยู่หรือไม่
-                const databaseExists = sessionStorage.getItem('databaseExists') === 'true';
-                if (!databaseExists) {
-                    document.getElementById('create-db-btn').style.display = 'inline-block';
-                }
+
+                // โหลดรายการฐานข้อมูลหลังจาก currentConnection ถูกเซ็ตแล้ว
+                loadDatabases();
             } else {
                 // ถ้าไม่มีข้อมูลการเชื่อมต่อ ให้กลับไปหน้าแรก
                 goBack();
             }
         }
-        
-        // โหลด collections
-        async function loadCollections() {
+
+        // โหลดรายการฐานข้อมูล
+        async function loadDatabases() {
+            if (!currentConnection) return;
+
             try {
-                const result = await eel.get_collections(currentConnection.name)();
-                
+                const result = await eel.get_databases(currentConnection.name)();
+
                 if (result.success) {
-                    displayCollections(result.collections);
+                    displayDatabases(result.databases);
+                    
+                    // ปิดหน้า Edit 
+                    document.getElementById('editor-section').style.display = 'none';
+                    document.querySelector('.data-section').style.display = 'block';
                 } else {
-                    showDatabaseAlert(result.message, 'danger');
+                    document.getElementById('databases-container').innerHTML = `
+                        <div class="alert alert-danger">${result.message}</div>
+                    `;
                 }
             } catch (error) {
-                showDatabaseAlert('เกิดข้อผิดพลาดในการโหลด collections', 'danger');
+                document.getElementById('databases-container').innerHTML = `
+                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล: ${error}</div>
+                `;
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
-        // แสดง collections
-        function displayCollections(collections) {
-            const container = document.getElementById('collections-container');
-            
-            if (collections.length === 0) {
-                container.innerHTML = '<div class="no-data">ไม่มี collections ในฐานข้อมูลนี้</div>';
-                document.getElementById('btn-del-collections').classList.remove('show');
+
+        // แสดงรายการฐานข้อมูล
+        function displayDatabases(databases) {
+            const container = document.getElementById('databases-container');
+
+            if (databases.length === 0) {
+                container.innerHTML = '<div class="no-data">ไม่พบฐานข้อมูล</div>';
                 return;
             }
-            
-            const collectionsList = collections.map(collection => `
-                <div class="collection-item" onclick="selectCollection('${collection}')">
-                    <input type="checkbox" class="collection-checkbox" data-collection="${collection}" onclick="onCheckboxChange(event)">
-                    <span class="collection-name">📄 ${collection}</span>
+
+            container.innerHTML = databases.map(db => `
+                <div class="database-item" onclick="selectDatabase('${db}')">
+                    <span class="database-name-label">🗄️ ${db}</span>
                 </div>
             `).join('');
-            
-            container.innerHTML = collectionsList;
         }
-        
+
+        // เลือกฐานข้อมูล
+        async function selectDatabase(databaseName) {
+            currentDatabase = databaseName;
+            currentCollection = null;
+
+            // อัปเดต active state
+            document.querySelectorAll('.database-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // รีเซ็ต data section
+            document.getElementById('data-title').textContent = `ฐานข้อมูล: ${databaseName}`;
+            document.getElementById('data-stats').textContent = '';
+            document.getElementById('search-form').style.display = 'none';
+            document.getElementById('delete-btn').style.display = 'none';
+
+            // โหลด collections แสดงที่ content area
+            await loadCollections();
+        }
+
+        // โหลด collections
+        async function loadCollections() {
+            if (!currentDatabase) return;
+
+            const container = document.getElementById('data-content');
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    กำลังโหลด collections...
+                </div>
+            `;
+
+            try {
+                const result = await eel.get_collections(currentConnection.name, currentDatabase)();
+
+                if (result.success) {
+                    displayCollections(result.collections);
+                } else {
+                    container.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลด collections</div>';
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
+        }
+
+        // แสดง collections
+        function displayCollections(collections) {
+            const container = document.getElementById('data-content');
+
+            if (collections.length === 0) {
+                container.innerHTML = '<div class="no-data">ไม่มี collections ในฐานข้อมูลนี้</div>';
+                return;
+            }
+
+            document.getElementById('data-stats').textContent = `${collections.length} collections`;
+
+            const header = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <button class="btn btn-success" onclick="importCollection()">📥 Import</button>
+                        <button class="btn btn-primary" onclick="exportSelectedCollections()" style="margin-left: 5px;">📤 Export</button>
+                    </div>
+                    <button class="btn-del" id="btn-del-collections" onclick="deleteSelectedCollections()">🗑️ Del</button>
+                </div>
+            `;
+
+            const collectionsList = collections.map(collection => `
+                <tr style="cursor: pointer;" onclick="if(event.target.type !== 'checkbox') selectCollection('${collection}')">
+                    <td style="width: 50px; text-align: center;">
+                        <input type="checkbox" class="collection-checkbox" data-collection="${collection}" onclick="onCheckboxChange(event)">
+                    </td>
+                    <td>
+                        <span class="collection-name" style="display: flex; align-items: center; gap: 8px;">
+                            📄 ${collection}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            const tableHTML = `
+                <div style="overflow-y: auto; max-height: calc(100vh - 260px); border: 1px solid #e9ecef; border-radius: 5px;">
+                    <table class="data-table" style="background: white; margin: 0; width: 100%;">
+                        <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);">
+                            <tr>
+                                <th style="width: 50px; text-align: center;">
+                                    <input type="checkbox" id="select-all-collections" onclick="toggleAllCollections(event)" title="เลือกทั้งหมด">
+                                </th>
+                                <th>ชื่อ Collection</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${collectionsList}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = header + tableHTML;
+        }
+
+        // เลือก/ยกเลิกเลือก ทั้งหมด
+        function toggleAllCollections(event) {
+            const isChecked = event.target.checked;
+            const checkboxes = document.querySelectorAll('.collection-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateDelButton();
+        }
+
         // จัดการเมื่อ checkbox เปลี่ยนสถานะ
         function onCheckboxChange(event) {
             event.stopPropagation();
             updateDelButton();
         }
-        
+
         // อัปเดตการแสดงปุ่ม Del
         function updateDelButton() {
             const checked = document.querySelectorAll('.collection-checkbox:checked');
@@ -1283,45 +1627,44 @@ class HTMLGenerator:
                 delBtn.textContent = '🗑️ Del';
             }
         }
-        
+
         // ลบ collections ที่เลือก
         async function deleteSelectedCollections() {
             const checked = document.querySelectorAll('.collection-checkbox:checked');
             if (checked.length === 0) {
-                alert('กรุณาเลือก collection ที่ต้องการลบ');
+                showAlert('กรุณาเลือก collection ที่ต้องการลบ', 'แจ้งเตือน', 'warning');
                 return;
             }
-            
+
             const names = Array.from(checked).map(cb => cb.dataset.collection);
-            const confirmMsg = '\u0e04\u0e38\u0e13\u0e41\u0e19\u0e48\u0e43\u0e08\u0e2b\u0e23\u0e37\u0e2d\u0e44\u0e21\u0e48\u0e17\u0e35\u0e48\u0e08\u0e30\u0e25\u0e1a ' + names.length + ' collections?\\n\\n' + names.join('\\n') + '\\n\\n\u0e01\u0e32\u0e23\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e19\u0e35\u0e49\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01\u0e44\u0e14\u0e49!';
-            
-            if (!confirm(confirmMsg)) return;
-            
+            const confirmMsg = `คุณแน่ใจหรือไม่ที่จะลบ ${names.length} collections?\n\n${names.join('\n')}\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!`;
+
+            if (!await showConfirm(confirmMsg, '⚠️ ยืนยันการลบ Collections')) return;
+
             try {
-                const result = await eel.drop_collections(currentConnection.name, names)();
-                
+                const result = await eel.drop_collections(currentConnection.name, currentDatabase, names)();
+
                 if (result.success) {
-                    alert(result.message);
+                    showAlert(result.message, 'สำเร็จ', 'success');
                     // รีเซ็ต current collection ถ้าถูกลบ
                     if (currentCollection && names.includes(currentCollection)) {
                         currentCollection = null;
-                        document.getElementById('data-title').textContent = 'เลือก Collection เพื่อดูข้อมูล';
+                        document.getElementById('data-title').textContent = `ฐานข้อมูล: ${currentDatabase}`;
                         document.getElementById('data-stats').textContent = '';
-                        document.getElementById('data-content').innerHTML = '<div class="no-data">เลือก Collection จากรายการด้านซ้ายเพื่อดูข้อมูล</div>';
                         document.getElementById('search-form').style.display = 'none';
                         document.getElementById('delete-btn').style.display = 'none';
                     }
                     // โหลด collections ใหม่
                     await loadCollections();
                 } else {
-                    alert(result.message);
+                    showAlert(result.message, 'ผิดพลาด', 'error');
                 }
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการลบ collections');
+                showAlert('เกิดข้อผิดพลาดในการลบ collections', 'ผิดพลาด', 'error');
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
+
         // เลือก collection
         async function selectCollection(collectionName) {
             try {
@@ -1329,26 +1672,30 @@ class HTMLGenerator:
                 document.querySelectorAll('.collection-item').forEach(item => {
                     item.classList.remove('active');
                 });
-                event.target.classList.add('active');
-                
+                event.currentTarget.classList.add('active');
+
                 currentCollection = collectionName;
                 
+                // ปิดหน้า Edit
+                document.getElementById('editor-section').style.display = 'none';
+                document.querySelector('.data-section').style.display = 'block';
+
                 // แสดง loading
-                document.getElementById('data-title').textContent = `Collection: ${collectionName}`;
+                document.getElementById('data-title').textContent = `${currentDatabase} / ${collectionName}`;
                 document.getElementById('data-content').innerHTML = `
                     <div class="loading">
                         <div class="spinner"></div>
                         กำลังโหลดข้อมูล...
                     </div>
                 `;
-                
+
                 // ซ่อน search form และปุ่ม Delete
                 document.getElementById('search-form').style.display = 'none';
                 document.getElementById('delete-btn').style.display = 'none';
-                
+
                 // โหลดข้อมูล
-                const result = await eel.get_collection_data(currentConnection.name, collectionName, 50)();
-                
+                const result = await eel.get_collection_data(currentConnection.name, currentDatabase, collectionName, 50)();
+
                 if (result.success) {
                     displayData(result.data);
                     // โหลด fields สำหรับ search
@@ -1365,11 +1712,11 @@ class HTMLGenerator:
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
+
         // แสดงข้อมูล
         function displayData(data) {
             const container = document.getElementById('data-content');
-            
+
             if (data.length === 0) {
                 container.innerHTML = '<div class="no-data">ไม่มีข้อมูลใน collection นี้</div>';
                 document.getElementById('data-stats').textContent = '0 เอกสาร';
@@ -1377,48 +1724,51 @@ class HTMLGenerator:
                 document.getElementById('delete-btn').style.display = 'none';
                 return;
             }
-            
+
             // แสดงสถิติ
             document.getElementById('data-stats').textContent = `${data.length} เอกสาร (แสดง 50 รายการแรก)`;
-            
+
             // แสดง search form และปุ่ม Delete
             document.getElementById('search-form').style.display = 'block';
             document.getElementById('delete-btn').style.display = 'inline-block';
-            
+
             // สร้างตาราง
             if (data.length > 0) {
                 const fields = Object.keys(data[0]);
-                
+
                 const tableHTML = `
-                    <div style="overflow-y: auto; overflow-x: auto; max-height: calc(100vh - 280px); border: 1px solid #e9ecef; border-radius: 5px;">
-                        <table class="data-table" style="background: white; margin: 0; width: 100%;">
-                            <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);">
-                                <tr>
-                                    ${fields.map(field => `<th>${field}</th>`).join('')}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                ${fields.map(field => `<th>${field}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(doc => `
+                                <tr ondblclick="editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
+                                    ${fields.map(field => `<td>${formatValue(doc[field])}</td>`).join('')}
                                 </tr>
-                            </thead>
-                            <tbody>
-                                ${data.map(doc => `
-                                    <tr ondblclick="editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
-                                        ${fields.map(field => `<td>${formatValue(doc[field])}</td>`).join('')}
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 `;
-                
+
                 container.innerHTML = tableHTML;
             }
         }
-        
-        let currentEditingDocumentId = null;
+
+
 
         // เปิด Editor เพื่อแก้ไข Document
         async function editDocument(documentId) {
             try {
-                // แสดง loading
-                document.getElementById('data-content').innerHTML = `
+                // สลับ UI ทันที
+                document.querySelector('.data-section').style.display = 'none';
+                const editorSection = document.getElementById('editor-section');
+                editorSection.style.display = 'flex';
+                
+                // แสดง loading ใน editor container
+                document.getElementById('editor-fields-container').innerHTML = `
                     <div class="loading">
                         <div class="spinner"></div>
                         กำลังโหลดข้อมูล Document...
@@ -1431,88 +1781,147 @@ class HTMLGenerator:
                 if (result.success) {
                     currentEditingDocumentId = documentId;
                     
-                    // สลับ UI
-                    document.querySelector('.data-section').style.display = 'none';
-                    const editorSection = document.getElementById('editor-section');
-                    editorSection.style.display = 'flex';
-                    
                     document.getElementById('editor-subtitle').textContent = `Collection: ${currentCollection} | ID: ${documentId}`;
                     
-                    // นำข้อมูล JSON string มาแสดงใน Editor
-                    const editor = document.getElementById('document-json-editor');
-                    editor.value = result.document_json;
-                    
-                    // เปลี่ยนกล่องข้อความให้กลับมาเป็นข้อมูลปกติเผื่อกดปิดแล้วกลับมา
-                    loadCollectionData(currentCollection); 
+                    // Parse JSON แล้วสร้าง field rows
+                    currentDocumentData = JSON.parse(result.document_json);
+                    renderEditorFields(currentDocumentData);
                     
                 } else {
-                    document.getElementById('data-content').innerHTML = `
+                    document.getElementById('editor-fields-container').innerHTML = `
                         <div class="alert alert-danger">${result.message}</div>
                     `;
                 }
             } catch (error) {
                 console.error('เกิดข้อผิดพลาดในการโหลด Document:', error);
-                document.getElementById('data-content').innerHTML = `
+                document.getElementById('editor-fields-container').innerHTML = `
                     <div class="alert alert-danger">เกิดข้อผิดพลาดในการดึงข้อมูล Document</div>
                 `;
             }
         }
 
-        // บันทึก Document
-        async function saveDocument(btnElement) {
+        // Render field rows ใน Editor
+        function renderEditorFields(docData) {
+            const container = document.getElementById('editor-fields-container');
+            let html = '';
+
+            for (const [key, value] of Object.entries(docData)) {
+                const isId = (key === '_id');
+                const valueStr = (typeof value === 'object' && value !== null)
+                    ? JSON.stringify(value, null, 2)
+                    : String(value ?? '');
+                const isMultiline = (typeof value === 'object' && value !== null) || valueStr.length > 80;
+                const escapedValue = valueStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const escapedKey = key.replace(/'/g, "'").replace(/"/g, '&quot;');
+
+                html += `<div class="editor-field-row">`;
+                html += `  <div class="editor-field-key" title="${key}">${key}</div>`;
+                html += `  <div class="editor-field-value">`;
+
+                if (isId) {
+                    // _id เป็น read-only
+                    html += `<div class="field-readonly">${escapedValue}</div>`;
+                } else if (isMultiline) {
+                    html += `<textarea id="field-${escapedKey}" rows="4">${escapedValue}</textarea>`;
+                } else {
+                    html += `<input type="text" id="field-${escapedKey}" value="${escapedValue}">`;
+                }
+
+                html += `  </div>`;
+                html += `  <div class="editor-field-actions">`;
+
+                if (!isId) {
+                    html += `<button class="btn-update-field" onclick="updateField('${escapedKey}', this)">💾 Update</button>`;
+                }
+
+                html += `  </div>`;
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // เรียงลำดับฟิลด์ A-Z
+        function sortEditorFields() {
+            if (!currentDocumentData) return;
+            
+            // สร้าง object ใหม่ที่เรียงลำดับ key แล้ว
+            const sortedData = {};
+            // _id ควรอยู่บนสุดเสมอ
+            if (currentDocumentData._id) {
+                sortedData._id = currentDocumentData._id;
+            }
+            
+            Object.keys(currentDocumentData)
+                .filter(key => key !== '_id')
+                .sort()
+                .forEach(key => {
+                    sortedData[key] = currentDocumentData[key];
+                });
+            
+            // เก็บข้อมูลที่เรียงแล้วไว้ใช้ต่อ
+            currentDocumentData = sortedData;
+            renderEditorFields(currentDocumentData);
+        }
+
+        // อัปเดตเฉพาะ field เดียว
+        async function updateField(fieldKey, btnElement) {
             if (!currentEditingDocumentId) return;
-            
-            const editor = document.getElementById('document-json-editor');
-            const documentJsonStr = editor.value;
-            
-            // ตรวจสอบ JSON ก่อนส่ง
+
+            const inputEl = document.getElementById('field-' + fieldKey);
+            if (!inputEl) return;
+
+            const rawValue = inputEl.value;
+
+            // ลองแปลง JSON ก่อน ถ้าไม่ได้ก็ใช้เป็น string
+            let valueJsonStr;
             try {
-                JSON.parse(documentJsonStr);
-            } catch (e) {
-                alert("รูปแบบ JSON ไม่ถูกต้อง กรุณาตรวจสอบวงเล็บปิดและคอมม่าอีกครั้ง");
-                return;
+                JSON.parse(rawValue);
+                valueJsonStr = rawValue;
+            } catch {
+                // เป็น string ธรรมดา
+                valueJsonStr = JSON.stringify(rawValue);
             }
 
             const originalText = btnElement.innerHTML;
-            btnElement.innerHTML = "กำลังบันทึก...";
+            btnElement.innerHTML = '⏳...';
             btnElement.disabled = true;
 
             try {
-                const result = await eel.update_document(
-                    currentConnection.name, 
-                    currentDatabase, 
-                    currentCollection, 
-                    currentEditingDocumentId, 
-                    documentJsonStr
+                const result = await eel.update_document_field(
+                    currentConnection.name,
+                    currentDatabase,
+                    currentCollection,
+                    currentEditingDocumentId,
+                    fieldKey,
+                    valueJsonStr
                 )();
 
-                btnElement.innerHTML = originalText;
-                btnElement.disabled = false;
-
                 if (result.success) {
-                    // ปิดหน้า Editor แล้ว Reload collection data
-                    closeEditor();
-                    loadCollectionData(currentCollection);
-                    
-                    // แสดง alert ลอยๆ ว่าสำเร็จ
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-success';
-                    alertDiv.style.position = 'fixed';
-                    alertDiv.style.top = '20px';
-                    alertDiv.style.right = '20px';
-                    alertDiv.style.zIndex = '9999';
-                    alertDiv.textContent = result.message;
-                    document.body.appendChild(alertDiv);
-                    
-                    setTimeout(() => alertDiv.remove(), 3000);
+                    // อัปเดตข้อมูลใน currentDocumentData ด้วย
+                    try {
+                        currentDocumentData[fieldKey] = JSON.parse(valueJsonStr);
+                    } catch {
+                        currentDocumentData[fieldKey] = rawValue;
+                    }
+
+                    btnElement.innerHTML = '✅';
+                    btnElement.classList.add('success');
+                    setTimeout(() => {
+                        btnElement.innerHTML = originalText;
+                        btnElement.classList.remove('success');
+                        btnElement.disabled = false;
+                    }, 1500);
                 } else {
-                    alert("ล้มเหลว: " + result.message);
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                    showAlert('ล้มเหลว: ' + result.message, 'ผิดพลาด', 'error');
                 }
             } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการบันทึก Document:', error);
+                console.error('เกิดข้อผิดพลาดในการอัปเดต field:', error);
                 btnElement.innerHTML = originalText;
                 btnElement.disabled = false;
-                alert("เกิดข้อผิดพลาด Javascript: " + String(error.message || error));
+                showAlert('เกิดข้อผิดพลาด: ' + String(error.message || error), 'ผิดพลาด', 'error');
             }
         }
 
@@ -1521,35 +1930,36 @@ class HTMLGenerator:
             document.getElementById('editor-section').style.display = 'none';
             document.querySelector('.data-section').style.display = 'block';
             currentEditingDocumentId = null;
-            document.getElementById('document-json-editor').value = "";
+            currentDocumentData = null;
+            document.getElementById('editor-fields-container').innerHTML = '';
         }
-        
+
         // จัดรูปแบบค่า
         function formatValue(value) {
             if (value === null || value === undefined) {
                 return '<em>null</em>';
             }
-            
+
             if (Array.isArray(value)) {
                 return '<span style="color: #6c757d; font-style: italic;">[array]</span>';
             }
-            
+
             if (typeof value === 'object') {
                 return '<span style="color: #6c757d; font-style: italic;">[object]</span>';
             }
-            
+
             if (typeof value === 'string' && value.length > 100) {
                 return value.substring(0, 100) + '...';
             }
-            
+
             return String(value);
         }
-        
+
         // โหลด fields ของ collection
         async function loadCollectionFields(collectionName) {
             try {
-                const result = await eel.get_collection_fields(currentConnection.name, collectionName)();
-                
+                const result = await eel.get_collection_fields(currentConnection.name, currentDatabase, collectionName)();
+
                 if (result.success) {
                     currentFields = result.fields;
                     populateSearchFields(result.fields);
@@ -1558,12 +1968,12 @@ class HTMLGenerator:
                 console.error('เกิดข้อผิดพลาดในการโหลด fields:', error);
             }
         }
-        
+
         // เติมข้อมูล fields ใน dropdown
         function populateSearchFields(fields) {
             const fieldSelect = document.getElementById('search-field');
             fieldSelect.innerHTML = '<option value="">เลือกฟิลด์</option>';
-            
+
             fields.forEach(field => {
                 const option = document.createElement('option');
                 option.value = field;
@@ -1571,18 +1981,18 @@ class HTMLGenerator:
                 fieldSelect.appendChild(option);
             });
         }
-        
+
         // ดำเนินการค้นหา
         async function performSearch() {
             const field = document.getElementById('search-field').value;
             const operator = document.getElementById('search-operator').value;
             const value = document.getElementById('search-value').value;
-            
+
             if (!field || !operator || !value) {
-                alert('กรุณากรอกข้อมูลการค้นหาให้ครบถ้วน');
+                showAlert('กรุณากรอกข้อมูลการค้นหาให้ครบถ้วน', 'แจ้งเตือน', 'warning');
                 return;
             }
-            
+
             try {
                 // แสดง loading
                 document.getElementById('data-content').innerHTML = `
@@ -1591,16 +2001,17 @@ class HTMLGenerator:
                         กำลังค้นหาข้อมูล...
                     </div>
                 `;
-                
+
                 const result = await eel.get_collection_data(
-                    currentConnection.name, 
-                    currentCollection, 
-                    50, 
-                    field, 
-                    operator, 
+                    currentConnection.name,
+                    currentDatabase,
+                    currentCollection,
+                    50,
+                    field,
+                    operator,
                     value
                 )();
-                
+
                 if (result.success) {
                     displayData(result.data);
                 } else {
@@ -1615,14 +2026,14 @@ class HTMLGenerator:
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
+
         // ล้างการค้นหา
         async function clearSearch() {
             // รีเซ็ตฟอร์ม
             document.getElementById('search-field').value = '';
             document.getElementById('search-operator').value = '';
             document.getElementById('search-value').value = '';
-            
+
             try {
                 // แสดง loading
                 document.getElementById('data-content').innerHTML = `
@@ -1631,10 +2042,10 @@ class HTMLGenerator:
                         กำลังโหลดข้อมูล...
                     </div>
                 `;
-                
+
                 // โหลดข้อมูลทั้งหมดใหม่
-                const result = await eel.get_collection_data(currentConnection.name, currentCollection, 50)();
-                
+                const result = await eel.get_collection_data(currentConnection.name, currentDatabase, currentCollection, 50)();
+
                 if (result.success) {
                     displayData(result.data);
                 } else {
@@ -1649,107 +2060,179 @@ class HTMLGenerator:
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
-        // สร้างฐานข้อมูล
-        async function createDatabase() {
-            if (!currentConnection) return;
-            
+
+        // นำเข้า collection จากไฟล์ JSON
+        async function importCollection() {
+            if (!currentConnection || !currentDatabase) {
+                showAlert('กรุณาเลือกฐานข้อมูลก่อน', 'แจ้งเตือน', 'warning');
+                return;
+            }
+
             try {
-                const result = await eel.create_database(currentConnection.name, currentConnection.database)();
-                
+                const result = await eel.import_collection(currentConnection.name, currentDatabase)();
+
                 if (result.success) {
-                    showDatabaseAlert(result.message, 'success');
-                    document.getElementById('create-db-btn').style.display = 'none';
-                    loadCollections();
+                    showAlert(result.message, 'นำเข้าสำเร็จ', 'success');
+                    // โหลด collections ใหม่
+                    await loadCollections();
                 } else {
-                    showDatabaseAlert(result.message, 'danger');
+                    if (result.message !== 'ไม่ได้เลือกไฟล์') {
+                        showAlert(result.message, 'แจ้งเตือน', 'error');
+                    }
                 }
             } catch (error) {
-                showDatabaseAlert('เกิดข้อผิดพลาดในการสร้างฐานข้อมูล', 'danger');
+                showAlert('เกิดข้อผิดพลาดในการนำเข้า collection', 'ผิดพลาด', 'error');
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
-        // แสดง alert ในส่วนฐานข้อมูล
-        function showDatabaseAlert(message, type) {
-            const alertDiv = document.getElementById('database-alert');
-            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            
-            setTimeout(() => {
-                alertDiv.innerHTML = '';
-            }, 5000);
+
+        // ส่งออก collections ที่เลือกเป็นไฟล์ JSON
+        async function exportSelectedCollections() {
+            const checked = document.querySelectorAll('.collection-checkbox:checked');
+            if (checked.length === 0) {
+                showAlert('กรุณาเลือก collection ที่ต้องการส่งออก', 'แจ้งเตือน', 'warning');
+                return;
+            }
+
+            const names = Array.from(checked).map(cb => cb.dataset.collection);
+
+            try {
+                const result = await eel.export_collections(currentConnection.name, currentDatabase, names)();
+
+                if (result.success) {
+                    showAlert(result.message, 'ส่งออกสำเร็จ', 'success');
+                } else {
+                    if (result.message !== 'ยกเลิกการส่งออก' && result.message !== 'ไม่ได้เลือกโฟลเดอร์') {
+                        showAlert(result.message, 'ผิดพลาด', 'error');
+                    }
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการส่งออก collections', 'ผิดพลาด', 'error');
+                console.error('เกิดข้อผิดพลาด:', error);
+            }
         }
-        
+
         // กลับไปหน้าแรก
         function goBack() {
             sessionStorage.removeItem('currentConnection');
-            sessionStorage.removeItem('databaseExists');
             window.location.href = 'index.html?v=' + new Date().getTime();
         }
-        
+
         // แสดง modal ล้างข้อมูล
         function showDeleteModal() {
             if (!currentCollection) return;
-            
+
             document.getElementById('modal-collection-name').textContent = currentCollection;
             document.getElementById('confirm-collection-name').value = '';
             document.getElementById('delete-modal').style.display = 'flex';
             document.getElementById('confirm-collection-name').focus();
         }
-        
+
         // ซ่อน modal ล้างข้อมูล
         function hideDeleteModal() {
             document.getElementById('delete-modal').style.display = 'none';
         }
-        
+
         // ยืนยันการล้างข้อมูล
         async function confirmDelete() {
-            if (!currentCollection || !currentConnection) return;
-            
+            if (!currentCollection || !currentConnection || !currentDatabase) return;
+
             const confirmCollectionName = document.getElementById('confirm-collection-name').value.trim();
-            
+
             if (!confirmCollectionName) {
-                alert('กรุณากรอกชื่อ collection เพื่อยืนยัน');
+                showAlert('กรุณากรอกชื่อ collection เพื่อยืนยัน', 'แจ้งเตือน', 'warning');
                 return;
             }
-            
+
             try {
                 const result = await eel.clear_collection(
-                    currentConnection.name, 
-                    currentCollection, 
+                    currentConnection.name,
+                    currentDatabase,
+                    currentCollection,
                     confirmCollectionName
                 )();
-                
+
                 if (result.success) {
-                    alert(result.message);
+                    showAlert(result.message, 'สำเร็จ', 'success');
                     hideDeleteModal();
                     // โหลดข้อมูลใหม่
                     await selectCollection(currentCollection);
                 } else {
-                    alert(result.message);
+                    showAlert(result.message, 'ผิดพลาด', 'error');
                 }
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการล้างข้อมูล');
+                showAlert('เกิดข้อผิดพลาดในการล้างข้อมูล', 'ผิดพลาด', 'error');
                 console.error('เกิดข้อผิดพลาด:', error);
             }
         }
-        
+
         // ปิด modal เมื่อคลิกพื้นหลัง
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('delete-modal').addEventListener('click', function(e) {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('delete-modal').addEventListener('click', function (e) {
                 if (e.target === this) {
                     hideDeleteModal();
                 }
             });
-            
+
             // เพิ่ม event listener สำหรับ Enter key ใน input
-            document.getElementById('confirm-collection-name').addEventListener('keypress', function(e) {
+            document.getElementById('confirm-collection-name').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     confirmDelete();
                 }
             });
         });
+
+        // ------------------ Alert & Confirm Logic ------------------ //
+        function showAlert(message, title = 'แจ้งเตือน', type = 'info') {
+            const modal = document.getElementById('alert-modal');
+            const titleEl = document.getElementById('alert-modal-title');
+            const msgEl = document.getElementById('alert-modal-message');
+            const okBtn = document.getElementById('alert-modal-ok');
+
+            titleEl.textContent = title;
+            titleEl.className = 'generic-modal-title ' + type;
+            msgEl.textContent = message;
+
+            modal.classList.add('show');
+
+            // ใช้ Promise สำหรับ wait ให้คนคลิก (แม้ไม่ต้องการค่าส่งกลับ มักมีประโยชน์)
+            return new Promise(resolve => {
+                const closeAlert = () => {
+                    modal.classList.remove('show');
+                    okBtn.removeEventListener('click', closeAlert);
+                    resolve();
+                };
+                okBtn.addEventListener('click', closeAlert);
+            });
+        }
+
+        function showConfirm(message, title = 'ยืนยันการดำเนินการ') {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-modal-title');
+            const msgEl = document.getElementById('confirm-modal-message');
+            const yesBtn = document.getElementById('confirm-modal-yes');
+            const noBtn = document.getElementById('confirm-modal-no');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+
+            modal.classList.add('show');
+
+            return new Promise(resolve => {
+                const cleanup = () => {
+                    modal.classList.remove('show');
+                    yesBtn.removeEventListener('click', onYes);
+                    noBtn.removeEventListener('click', onNo);
+                };
+
+                const onYes = () => { cleanup(); resolve(true); };
+                const onNo = () => { cleanup(); resolve(false); };
+
+                yesBtn.addEventListener('click', onYes);
+                noBtn.addEventListener('click', onNo);
+            });
+        }
     </script>
 </body>
-</html>
-        """ 
+
+</html>"""

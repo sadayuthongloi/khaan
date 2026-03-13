@@ -1,11 +1,5 @@
-"""
-MongoDB Connection Manager - Main Application
-แอปพลิเคชันหลักสำหรับจัดการการเชื่อมต่อ MongoDB
-"""
-
 import eel
 from database_manager import MongoDBConnectionManager, MongoDBClient
-from html_generator import HTMLGenerator
 
 
 # ตั้งค่า Eel
@@ -13,7 +7,6 @@ eel.init('html')
 
 # สร้าง instance ของ managers
 connection_manager = MongoDBConnectionManager()
-html_generator = HTMLGenerator()
 
 
 # Eel functions สำหรับ JavaScript
@@ -396,18 +389,15 @@ def open_mongodb_folder():
 
 def main():
     """ฟังก์ชันหลักสำหรับรันแอปพลิเคชัน"""
-    # สร้าง HTML interface
-    html_generator.generate_index_html()
-    html_generator.generate_main_html()
-    
-    # เริ่มต้น Eel application
+    # เริ่มต้น Eel application (serve ไฟล์จากโฟลเดอร์ html/ โดยตรง)
     print("กำลังเริ่มต้น MongoDB Connection Manager...")
     print("เปิดเบราว์เซอร์ที่: http://localhost:8000")
-    
+
     try:
         eel.start('index.html', size=(1200, 800), port=8000)
     except (SystemExit, MemoryError, KeyboardInterrupt):
         print("ปิดแอปพลิเคชัน...")
+
 
 
 if __name__ == "__main__":
