@@ -1,0 +1,239 @@
+<!-- P2-B · Data Table View -->
+<!-- State read from window: currentConnection, currentDatabase, currentCollection -->
+
+<style>
+    .search-form {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        flex-shrink: 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .search-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .search-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .search-group label {
+        font-size: 0.9em;
+        font-weight: bold;
+        color: #333;
+    }
+    .search-group select, .search-group input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        min-width: 120px;
+    }
+    .search-group select:focus, .search-group input:focus {
+        outline: none;
+        border-color: #0a58ca;
+        box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
+    }
+    .search-actions {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+    }
+</style>
+
+<!-- Search Form -->
+<div class="search-form" id="search-form" style="display: none;">
+    <div class="search-row">
+        <div class="search-group">
+            <label for="search-field">ฟิลด์</label>
+            <select id="search-field">
+                <option value="">เลือกฟิลด์</option>
+            </select>
+        </div>
+        <div class="search-group">
+            <label for="search-operator">เงื่อนไข</label>
+            <select id="search-operator">
+                <option value="">เลือกเงื่อนไข</option>
+                <option value="=">= (เท่ากับ)</option>
+                <option value="like">like (คล้าย)</option>
+            </select>
+        </div>
+        <div class="search-group">
+            <label for="search-value">ค่า</label>
+            <input type="text" id="search-value" placeholder="กรอกค่าที่ต้องการค้นหา">
+        </div>
+        <div class="search-actions">
+            <button class="btn btn-primary" onclick="performSearch()">🔍 ค้นหา</button>
+            <button class="btn btn-secondary" onclick="clearSearch()">🗑️ ล้างการค้นหา</button>
+        </div>
+    </div>
+</div>
+
+<!-- Data Content -->
+<div class="data-content" id="data-content">
+    <div class="loading">
+        <div class="spinner"></div>
+        กำลังโหลดข้อมูล...
+    </div>
+</div>
+
+<script>
+(function () {
+    let currentFields = [];
+
+    // ---- โหลดข้อมูลทันทีเมื่อ mount ----
+    async function init() {
+        if (!window.currentCollection) return;
+        document.getElementById('data-title').textContent = `${window.currentDatabase} / ${window.currentCollection}`;
+        document.getElementById('data-stats').textContent = '';
+        document.getElementById('search-form').style.display = 'none';
+        document.getElementById('delete-btn').style.display = 'none';
+
+        await loadData(50);
+        await loadCollectionFields(window.currentCollection);
+    }
+
+    async function loadData(limit, searchField = '', searchOp = '', searchVal = '') {
+        document.getElementById('data-content').innerHTML = `
+            <div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>
+        `;
+        try {
+            const result = await eel.get_collection_data(
+                window.currentConnection.name, window.currentDatabase,
+                window.currentCollection, limit, searchField, searchOp, searchVal
+            )();
+            if (result.success) displayData(result.data);
+            else document.getElementById('data-content').innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+        } catch (e) {
+            document.getElementById('data-content').innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+        }
+    }
+
+    function displayData(data) {
+        const container = document.getElementById('data-content');
+        if (data.length === 0) {
+            container.innerHTML = '<div class="no-data">ไม่มีข้อมูลใน collection นี้</div>';
+            document.getElementById('data-stats').textContent = '0 เอกสาร';
+            document.getElementById('delete-btn').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('data-stats').textContent = `${data.length} เอกสาร (แสดง 50 รายการแรก)`;
+        document.getElementById('search-form').style.display = 'block';
+        document.getElementById('delete-btn').style.display = 'inline-block';
+
+        const fields = Object.keys(data[0]);
+        const tableHTML = `
+            <table class="data-table">
+                <thead>
+                    <tr>${fields.map(f => `<th>${f}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                    ${data.map(doc => `
+                        <tr ondblclick="window._editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
+                            ${fields.map(f => `<td>${formatValue(doc[f])}</td>`).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        container.innerHTML = tableHTML;
+    }
+
+    function formatValue(value) {
+        if (value === null || value === undefined) return '<em>null</em>';
+        if (Array.isArray(value)) return '<span style="color:#6c757d;font-style:italic">[array]</span>';
+        if (typeof value === 'object') return '<span style="color:#6c757d;font-style:italic">[object]</span>';
+        if (typeof value === 'string' && value.length > 100) return value.substring(0, 100) + '...';
+        return String(value);
+    }
+
+    async function loadCollectionFields(collectionName) {
+        try {
+            const result = await eel.get_collection_fields(window.currentConnection.name, window.currentDatabase, collectionName)();
+            if (result.success) {
+                currentFields = result.fields;
+                const sel = document.getElementById('search-field');
+                if (sel) {
+                    sel.innerHTML = '<option value="">เลือกฟิลด์</option>';
+                    result.fields.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f; opt.textContent = f;
+                        sel.appendChild(opt);
+                    });
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    // ---- Search ----
+    window.performSearch = async function () {
+        const field = document.getElementById('search-field').value;
+        const op = document.getElementById('search-operator').value;
+        const val = document.getElementById('search-value').value;
+        if (!field || !op || !val) { window.showAlert('กรุณากรอกข้อมูลการค้นหาให้ครบถ้วน', 'แจ้งเตือน', 'warning'); return; }
+        await loadData(50, field, op, val);
+    };
+
+    window.clearSearch = async function () {
+        document.getElementById('search-field').value = '';
+        document.getElementById('search-operator').value = '';
+        document.getElementById('search-value').value = '';
+        await loadData(50);
+    };
+
+    // ---- Navigate to Editor ----
+    window._editDocument = function (documentId) {
+        window.currentEditingDocumentId = documentId;
+        window._navigate('editor');
+    };
+
+    // ---- Delete modal (triggered from header button) ----
+    window._showDeleteModal = function () {
+        if (!window.currentCollection) return;
+        document.getElementById('modal-collection-name').textContent = window.currentCollection;
+        document.getElementById('confirm-collection-name').value = '';
+        document.getElementById('delete-modal').style.display = 'flex';
+        document.getElementById('confirm-collection-name').focus();
+    };
+
+    window._hideDeleteModal = function () {
+        document.getElementById('delete-modal').style.display = 'none';
+    };
+
+    window._confirmDelete = async function () {
+        const confirmName = document.getElementById('confirm-collection-name').value.trim();
+        if (!confirmName) { window.showAlert('กรุณากรอกชื่อ collection เพื่อยืนยัน', 'แจ้งเตือน', 'warning'); return; }
+        try {
+            const result = await eel.clear_collection(
+                window.currentConnection.name, window.currentDatabase,
+                window.currentCollection, confirmName
+            )();
+            if (result.success) {
+                window.showAlert(result.message, 'สำเร็จ', 'success');
+                window._hideDeleteModal();
+                await loadData(50);
+            } else {
+                window.showAlert(result.message, 'ผิดพลาด', 'error');
+            }
+        } catch (e) {
+            window.showAlert('เกิดข้อผิดพลาดในการล้างข้อมูล', 'ผิดพลาด', 'error');
+        }
+    };
+
+    // event listeners สำหรับ delete modal
+    const deleteModal = document.getElementById('delete-modal');
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function (e) { if (e.target === this) window._hideDeleteModal(); });
+        const confirmInput = document.getElementById('confirm-collection-name');
+        if (confirmInput) confirmInput.addEventListener('keypress', e => { if (e.key === 'Enter') window._confirmDelete(); });
+    }
+
+    init();
+})();
+</script>

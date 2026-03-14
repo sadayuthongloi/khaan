@@ -7,6 +7,13 @@
       "database": "endoindex",
       "username": "medica",
       "password": "@C0mprehensive฿rep0rting"
+    },
+    {
+      "name": "moss",
+      "host": "localhost",
+      "port": 27017,
+      "username": "",
+      "password": ""
     }
   ]
 }

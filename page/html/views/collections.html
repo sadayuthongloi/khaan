@@ -1,0 +1,200 @@
+<!-- P2-A · Collections View -->
+<!-- State read from window: currentConnection, currentDatabase -->
+<!-- State written: currentCollection -->
+
+<style>
+    .btn-del {
+        padding: 4px 12px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        display: none;
+    }
+    .btn-del:hover { background: #c82333; }
+    .btn-del.show { display: inline-block; }
+
+    .collection-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #0a58ca;
+        flex-shrink: 0;
+    }
+</style>
+
+<div id="collections-view">
+    <!-- สร้างโดย displayCollections() -->
+</div>
+
+<script>
+(function () {
+    // ---- โหลด collections ----
+    async function loadCollections() {
+        if (!window.currentDatabase) return;
+
+        const container = document.getElementById('data-content');
+        container.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                กำลังโหลด collections...
+            </div>
+        `;
+
+        try {
+            const result = await eel.get_collections(window.currentConnection.name, window.currentDatabase)();
+            if (result.success) {
+                displayCollections(result.collections);
+            } else {
+                container.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+            }
+        } catch (error) {
+            container.innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลด collections</div>';
+            console.error(error);
+        }
+    }
+
+    function displayCollections(collections) {
+        const container = document.getElementById('data-content');
+        document.getElementById('data-stats').textContent = `${collections.length} collections`;
+
+        if (collections.length === 0) {
+            container.innerHTML = '<div class="no-data">ไม่มี collections ในฐานข้อมูลนี้</div>';
+            return;
+        }
+
+        const header = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <button class="btn btn-success" onclick="window._importCollection()">📥 Import</button>
+                    <button class="btn btn-primary" onclick="window._exportSelectedCollections()" style="margin-left: 5px;">📤 Export</button>
+                </div>
+                <button class="btn-del" id="btn-del-collections" onclick="window._deleteSelectedCollections()">🗑️ Del</button>
+            </div>
+        `;
+
+        const rows = collections.map(col => `
+            <tr style="cursor: pointer;" onclick="if(event.target.type !== 'checkbox') window._selectCollection('${col}')">
+                <td style="width: 50px; text-align: center;">
+                    <input type="checkbox" class="collection-checkbox" data-collection="${col}" onclick="onCheckboxChange(event)">
+                </td>
+                <td>
+                    <span style="display: flex; align-items: center; gap: 8px;">📄 ${col}</span>
+                </td>
+            </tr>
+        `).join('');
+
+        const tableHTML = `
+            <div style="overflow-y: auto; max-height: calc(100vh - 260px); border: 1px solid #e9ecef; border-radius: 5px;">
+                <table class="data-table" style="background: white; margin: 0; width: 100%;">
+                    <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <th style="width: 50px; text-align: center;">
+                                <input type="checkbox" id="select-all-collections" onclick="toggleAllCollections(event)" title="เลือกทั้งหมด">
+                            </th>
+                            <th>ชื่อ Collection</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        `;
+        container.innerHTML = header + tableHTML;
+    }
+
+    function toggleAllCollections(event) {
+        document.querySelectorAll('.collection-checkbox').forEach(cb => { cb.checked = event.target.checked; });
+        updateDelButton();
+    }
+
+    function onCheckboxChange(event) {
+        event.stopPropagation();
+        updateDelButton();
+    }
+
+    function updateDelButton() {
+        const checked = document.querySelectorAll('.collection-checkbox:checked');
+        const btn = document.getElementById('btn-del-collections');
+        if (!btn) return;
+        if (checked.length > 0) {
+            btn.classList.add('show');
+            btn.textContent = `🗑️ Del (${checked.length})`;
+        } else {
+            btn.classList.remove('show');
+            btn.textContent = '🗑️ Del';
+        }
+    }
+
+    // ---- expose เป็น window functions ----
+    window._selectCollection = async function (collectionName) {
+        window.currentCollection = collectionName;
+        document.getElementById('data-title').textContent = `${window.currentDatabase} / ${collectionName}`;
+        document.getElementById('data-stats').textContent = '';
+        document.getElementById('search-form').style.display = 'none';
+        document.getElementById('delete-btn').style.display = 'none';
+        window._navigate('data');
+    };
+
+    window._importCollection = async function () {
+        if (!window.currentConnection || !window.currentDatabase) {
+            window.showAlert('กรุณาเลือกฐานข้อมูลก่อน', 'แจ้งเตือน', 'warning');
+            return;
+        }
+        try {
+            const result = await eel.import_collection(window.currentConnection.name, window.currentDatabase)();
+            if (result.success) {
+                window.showAlert(result.message, 'นำเข้าสำเร็จ', 'success');
+                loadCollections();
+            } else {
+                if (result.message !== 'ไม่ได้เลือกไฟล์') window.showAlert(result.message, 'แจ้งเตือน', 'error');
+            }
+        } catch (e) {
+            window.showAlert('เกิดข้อผิดพลาดในการนำเข้า', 'ผิดพลาด', 'error');
+        }
+    };
+
+    window._exportSelectedCollections = async function () {
+        const checked = document.querySelectorAll('.collection-checkbox:checked');
+        if (checked.length === 0) { window.showAlert('กรุณาเลือก collection ที่ต้องการส่งออก', 'แจ้งเตือน', 'warning'); return; }
+        const names = Array.from(checked).map(cb => cb.dataset.collection);
+        try {
+            const result = await eel.export_collections(window.currentConnection.name, window.currentDatabase, names)();
+            if (result.success) {
+                window.showAlert(result.message, 'ส่งออกสำเร็จ', 'success');
+            } else {
+                if (result.message !== 'ยกเลิกการส่งออก' && result.message !== 'ไม่ได้เลือกโฟลเดอร์') {
+                    window.showAlert(result.message, 'ผิดพลาด', 'error');
+                }
+            }
+        } catch (e) {
+            window.showAlert('เกิดข้อผิดพลาดในการส่งออก', 'ผิดพลาด', 'error');
+        }
+    };
+
+    window._deleteSelectedCollections = async function () {
+        const checked = document.querySelectorAll('.collection-checkbox:checked');
+        if (checked.length === 0) { window.showAlert('กรุณาเลือก collection ที่ต้องการลบ', 'แจ้งเตือน', 'warning'); return; }
+        const names = Array.from(checked).map(cb => cb.dataset.collection);
+        const msg = `คุณแน่ใจหรือไม่ที่จะลบ ${names.length} collections?\n\n${names.join('\n')}\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!`;
+        if (!await window.showConfirm(msg, '⚠️ ยืนยันการลบ Collections')) return;
+        try {
+            const result = await eel.drop_collections(window.currentConnection.name, window.currentDatabase, names)();
+            if (result.success) {
+                window.showAlert(result.message, 'สำเร็จ', 'success');
+                loadCollections();
+            } else {
+                window.showAlert(result.message, 'ผิดพลาด', 'error');
+            }
+        } catch (e) {
+            window.showAlert('เกิดข้อผิดพลาดในการลบ', 'ผิดพลาด', 'error');
+        }
+    };
+
+    // โหลดทันทีเมื่อ view นี้ mount
+    loadCollections();
+})();
+</script>

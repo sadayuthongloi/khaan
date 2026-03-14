@@ -11,12 +11,15 @@ class HTMLGenerator:
     
     def __init__(self, html_dir: str = 'html'):
         self.html_dir = html_dir
+        self.views_dir = os.path.join(html_dir, 'views')
         self._ensure_html_directory()
     
     def _ensure_html_directory(self):
-        """สร้างโฟลเดอร์ html ถ้ายังไม่มี"""
+        """สร้างโฟลเดอร์ html และ views ถ้ายังไม่มี"""
         if not os.path.exists(self.html_dir):
             os.makedirs(self.html_dir)
+        if not os.path.exists(self.views_dir):
+            os.makedirs(self.views_dir)
     
     def generate_index_html(self):
         """สร้างไฟล์ index.html"""
@@ -27,12 +30,54 @@ class HTMLGenerator:
         """สร้างไฟล์ main.html"""
         html_content = self._get_main_html_content()
         self._write_html_file('main.html', html_content)
-    
+
+    def generate_views(self):
+        """สร้างไฟล์ view แยกใน views/"""
+        self._write_view_file('collections.html', self._get_collections_view_content())
+        self._write_view_file('data.html', self._get_data_view_content())
+        self._write_view_file('editor.html', self._get_editor_view_content())
+
+    def generate_all(self):
+        """สร้างไฟล์ HTML ทั้งหมด"""
+        self.generate_index_html()
+        self.generate_main_html()
+        self.generate_views()
+
     def _write_html_file(self, filename: str, content: str):
-        """เขียนไฟล์ HTML"""
+        """เขียนไฟล์ HTML หลัก"""
         filepath = os.path.join(self.html_dir, filename)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
+
+    def _write_view_file(self, filename: str, content: str):
+        """เขียนไฟล์ view ใน views/"""
+        filepath = os.path.join(self.views_dir, filename)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+
+    def _get_collections_view_content(self) -> str:
+        """อ่านเนื้อหา views/collections.html จากไฟล์ (ถ้ามี) หรือ return string เปล่า"""
+        path = os.path.join(self.views_dir, 'collections.html')
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
+        return '<!-- collections view not found -->'
+
+    def _get_data_view_content(self) -> str:
+        """อ่านเนื้อหา views/data.html จากไฟล์ (ถ้ามี)"""
+        path = os.path.join(self.views_dir, 'data.html')
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
+        return '<!-- data view not found -->'
+
+    def _get_editor_view_content(self) -> str:
+        """อ่านเนื้อหา views/editor.html จากไฟล์ (ถ้ามี)"""
+        path = os.path.join(self.views_dir, 'editor.html')
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
+        return '<!-- editor view not found -->'
     
     def _get_index_html_content(self) -> str:
         """สร้างเนื้อหา index.html"""
@@ -232,6 +277,23 @@ class HTMLGenerator:
             pointer-events: none;
         }
         
+        .page-id-badge {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            background: #0a58ca;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 9999;
+            opacity: 0.85;
+            pointer-events: none;
+            user-select: none;
+        }
+        
         .test-result-modal {
             position: fixed;
             top: 0;
@@ -289,6 +351,7 @@ class HTMLGenerator:
     </style>
 </head>
 <body>
+    <div class="page-id-badge">P1 · Connections</div>
     <div class="container">
         <div class="header">
             <h1>MongoDB Connection Manager</h1>
@@ -600,6 +663,23 @@ class HTMLGenerator:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MongoDB Manager - Main</title>
     <style>
+        .page-id-badge {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            background: #0a58ca;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 9999;
+            opacity: 0.85;
+            pointer-events: none;
+            user-select: none;
+        }
+
         * {
             margin: 0;
             padding: 0;

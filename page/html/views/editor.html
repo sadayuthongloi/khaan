@@ -1,0 +1,237 @@
+<!-- P2-C · Document Editor View -->
+<!-- State read from window: currentConnection, currentDatabase, currentCollection, currentEditingDocumentId -->
+
+<style>
+    .editor-section {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .editor-header {
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .editor-fields-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background: white;
+    }
+    .editor-field-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        border: 1px solid #f0f0f0;
+        border-radius: 6px;
+        background: #fafafa;
+        transition: background 0.15s;
+    }
+    .editor-field-row:hover {
+        background: #f0f4ff;
+        border-color: #c8d8ff;
+    }
+    .editor-field-key {
+        font-weight: 600;
+        color: #0a58ca;
+        font-size: 0.85em;
+        word-break: break-word;
+        letter-spacing: 0.02em;
+        width: 150px;
+        min-width: 150px;
+        flex-shrink: 0;
+    }
+    .editor-field-value {
+        flex: 1;
+        min-width: 0;
+    }
+    .editor-field-value input,
+    .editor-field-value textarea {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+    }
+    .editor-field-value input:focus,
+    .editor-field-value textarea:focus {
+        outline: none;
+        border-color: #0a58ca;
+        box-shadow: 0 0 0 2px rgba(10,88,202,0.15);
+    }
+    .editor-field-value textarea { resize: vertical; min-height: 38px; }
+    .editor-field-value .field-readonly {
+        padding: 6px 10px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        color: #6c757d;
+        word-break: break-all;
+    }
+    .editor-field-actions { display: flex; flex-shrink: 0; }
+    .btn-update-field {
+        padding: 5px 14px;
+        background: #0a58ca;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .btn-update-field:hover { background: #084298; }
+    .btn-update-field:disabled { background: #6c757d; cursor: not-allowed; }
+    .btn-update-field.success { background: #28a745; }
+</style>
+
+<div class="editor-section">
+    <div class="editor-header">
+        <div>
+            <div class="data-title" id="editor-title">แก้ไข Document</div>
+            <div class="data-stats" id="editor-subtitle"></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
+            <button class="btn btn-info" onclick="sortEditorFieldsZA()">🔡 Z-A</button>
+            <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
+        </div>
+    </div>
+    <div class="editor-fields-container" id="editor-fields-container">
+        <div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล Document...</div>
+    </div>
+</div>
+
+<script>
+(function () {
+    let currentDocumentData = null;
+
+    async function init() {
+        const docId = window.currentEditingDocumentId;
+        if (!docId) { closeEditor(); return; }
+
+        document.getElementById('editor-subtitle').textContent =
+            `Collection: ${window.currentCollection} | ID: ${docId}`;
+
+        try {
+            const result = await eel.get_document(
+                window.currentConnection.name, window.currentDatabase,
+                window.currentCollection, docId
+            )();
+            if (result.success) {
+                currentDocumentData = JSON.parse(result.document_json);
+                renderEditorFields(currentDocumentData);
+            } else {
+                document.getElementById('editor-fields-container').innerHTML =
+                    `<div class="alert alert-danger">${result.message}</div>`;
+            }
+        } catch (e) {
+            document.getElementById('editor-fields-container').innerHTML =
+                '<div class="alert alert-danger">เกิดข้อผิดพลาดในการดึงข้อมูล Document</div>';
+        }
+    }
+
+    function renderEditorFields(docData) {
+        const container = document.getElementById('editor-fields-container');
+        let html = '';
+        for (const [key, value] of Object.entries(docData)) {
+            const isId = (key === '_id');
+            const valueStr = (typeof value === 'object' && value !== null)
+                ? JSON.stringify(value, null, 2) : String(value ?? '');
+            const isMultiline = (typeof value === 'object' && value !== null) || valueStr.length > 80;
+            const escaped = valueStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const escapedKey = key.replace(/'/g, "&#39;").replace(/"/g, '&quot;');
+
+            html += `<div class="editor-field-row">
+                <div class="editor-field-key" title="${key}">${key}</div>
+                <div class="editor-field-value">`;
+            if (isId) {
+                html += `<div class="field-readonly">${escaped}</div>`;
+            } else if (isMultiline) {
+                html += `<textarea id="field-${escapedKey}" rows="4">${escaped}</textarea>`;
+            } else {
+                html += `<input type="text" id="field-${escapedKey}" value="${escaped}">`;
+            }
+            html += `</div><div class="editor-field-actions">`;
+            if (!isId) html += `<button class="btn-update-field" onclick="updateField('${escapedKey}', this)">💾 Update</button>`;
+            html += `</div></div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    window.sortEditorFields = function () {
+        if (!currentDocumentData) return;
+        const sorted = {};
+        if (currentDocumentData._id) sorted._id = currentDocumentData._id;
+        Object.keys(currentDocumentData).filter(k => k !== '_id').sort().forEach(k => { sorted[k] = currentDocumentData[k]; });
+        currentDocumentData = sorted;
+        renderEditorFields(currentDocumentData);
+    };
+
+    window.sortEditorFieldsZA = function () {
+        if (!currentDocumentData) return;
+        const sorted = {};
+        if (currentDocumentData._id) sorted._id = currentDocumentData._id;
+        Object.keys(currentDocumentData).filter(k => k !== '_id').sort().reverse().forEach(k => { sorted[k] = currentDocumentData[k]; });
+        currentDocumentData = sorted;
+        renderEditorFields(currentDocumentData);
+    };
+
+    window.updateField = async function (fieldKey, btnElement) {
+        if (!window.currentEditingDocumentId) return;
+        const inputEl = document.getElementById('field-' + fieldKey);
+        if (!inputEl) return;
+        const rawValue = inputEl.value;
+        let valueJsonStr;
+        try { JSON.parse(rawValue); valueJsonStr = rawValue; }
+        catch { valueJsonStr = JSON.stringify(rawValue); }
+
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '⏳...';
+        btnElement.disabled = true;
+        try {
+            const result = await eel.update_document_field(
+                window.currentConnection.name, window.currentDatabase,
+                window.currentCollection, window.currentEditingDocumentId,
+                fieldKey, valueJsonStr
+            )();
+            if (result.success) {
+                try { currentDocumentData[fieldKey] = JSON.parse(valueJsonStr); } catch { currentDocumentData[fieldKey] = rawValue; }
+                btnElement.innerHTML = '✅';
+                btnElement.classList.add('success');
+                setTimeout(() => { btnElement.innerHTML = originalText; btnElement.classList.remove('success'); btnElement.disabled = false; }, 1500);
+            } else {
+                btnElement.innerHTML = originalText; btnElement.disabled = false;
+                window.showAlert('ล้มเหลว: ' + result.message, 'ผิดพลาด', 'error');
+            }
+        } catch (e) {
+            btnElement.innerHTML = originalText; btnElement.disabled = false;
+            window.showAlert('เกิดข้อผิดพลาด: ' + String(e.message || e), 'ผิดพลาด', 'error');
+        }
+    };
+
+    window.closeEditor = function () {
+        window.currentEditingDocumentId = null;
+        window._navigate('data');
+    };
+
+    init();
+})();
+</script>
