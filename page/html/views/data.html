@@ -70,6 +70,7 @@
         <div class="search-actions">
             <button class="btn btn-primary" onclick="performSearch()">🔍 ค้นหา</button>
             <button class="btn btn-secondary" onclick="clearSearch()">🗑️ ล้างการค้นหา</button>
+            <button class="btn btn-info" id="sort-btn" onclick="toggleSort()" title="เรียงใหม่สุด → เก่าสุด">🔽 Z→A (ใหม่→เก่า)</button>
         </div>
     </div>
 </div>
@@ -85,6 +86,8 @@
 <script>
 (function () {
     let currentFields = [];
+    let lastLoadedData = [];   // เก็บข้อมูลล่าสุดไว้ sort
+    let sortDesc = false;      // false = A→Z (เก่า→ใหม่), true = Z→A (ใหม่→เก่า)
 
     // ---- โหลดข้อมูลทันทีเมื่อ mount ----
     async function init() {
@@ -107,7 +110,11 @@
                 window.currentConnection.name, window.currentDatabase,
                 window.currentCollection, limit, searchField, searchOp, searchVal
             )();
-            if (result.success) displayData(result.data);
+            if (result.success) {
+                lastLoadedData = result.data;
+                const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;
+                displayData(toShow);
+            }
             else document.getElementById('data-content').innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
         } catch (e) {
             document.getElementById('data-content').innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
@@ -185,6 +192,25 @@
         document.getElementById('search-operator').value = '';
         document.getElementById('search-value').value = '';
         await loadData(50);
+    };
+
+    // ---- Sort Toggle ----
+    window.toggleSort = function () {
+        sortDesc = !sortDesc;
+        const btn = document.getElementById('sort-btn');
+        if (btn) {
+            if (sortDesc) {
+                btn.textContent = '🔼 A→Z (เก่า→ใหม่)';
+                btn.title = 'เรียงเก่าสุด → ใหม่สุด (คลิกเพื่อสลับกลับ)';
+                btn.style.background = '#6c757d';
+            } else {
+                btn.textContent = '🔽 Z→A (ใหม่→เก่า)';
+                btn.title = 'เรียงใหม่สุด → เก่าสุด';
+                btn.style.background = '#17a2b8';
+            }
+        }
+        const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;
+        displayData(toShow);
     };
 
     // ---- Navigate to Editor ----

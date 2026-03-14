@@ -27,7 +27,8 @@
     }
 </style>
 
-<div id="collections-view">
+<!-- ใช้ data-content class เพื่อให้ scroll ได้เหมือนกัน -->
+<div class="data-content" id="collections-view">
     <!-- สร้างโดย displayCollections() -->
 </div>
 
@@ -37,7 +38,7 @@
     async function loadCollections() {
         if (!window.currentDatabase) return;
 
-        const container = document.getElementById('data-content');
+        const container = document.getElementById('collections-view');
         container.innerHTML = `
             <div class="loading">
                 <div class="spinner"></div>
@@ -59,7 +60,7 @@
     }
 
     function displayCollections(collections) {
-        const container = document.getElementById('data-content');
+        const container = document.getElementById('collections-view');
         document.getElementById('data-stats').textContent = `${collections.length} collections`;
 
         if (collections.length === 0) {
@@ -134,8 +135,7 @@
         window.currentCollection = collectionName;
         document.getElementById('data-title').textContent = `${window.currentDatabase} / ${collectionName}`;
         document.getElementById('data-stats').textContent = '';
-        document.getElementById('search-form').style.display = 'none';
-        document.getElementById('delete-btn').style.display = 'none';
+        // search-form และ delete-btn อยู่ใน data view เท่านั้น ไม่ต้อง hide ตรงนี้
         window._navigate('data');
     };
 
