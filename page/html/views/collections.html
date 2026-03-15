@@ -3,46 +3,97 @@
 <!-- State written: currentCollection -->
 
 <style>
-    .btn-del {
-        padding: 4px 12px;
-        background: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        display: none;
-    }
-    .btn-del:hover { background: #c82333; }
-    .btn-del.show { display: inline-block; }
-
-    .collection-checkbox {
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-        accent-color: #0a58ca;
-        flex-shrink: 0;
-    }
+    .collection-scrollbar::-webkit-scrollbar { width: 6px; }
+    .collection-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .collection-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
 
-<!-- ใช้ data-content class เพื่อให้ scroll ได้เหมือนกัน -->
-<div class="data-content" id="collections-view">
+<div class="data-content flex flex-col overflow-hidden min-h-0" id="collections-view">
     <!-- สร้างโดย displayCollections() -->
 </div>
 
 <script>
 (function () {
-    // ---- โหลด collections ----
+    let allCollections = [];
+    let filterText = '';
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function renderTableRows(collections) {
+        const tbody = document.getElementById('collections-tbody');
+        if (!tbody) return;
+        if (collections.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 text-sm">ไม่พบ collection ที่ตรงกับคำค้นหา</td></tr>';
+            return;
+        }
+        const rows = collections.map(col => `
+            <tr class="hover:bg-blue-50/30 transition group cursor-pointer" data-collection="${escapeHtml(col)}">
+                <td class="px-6 py-4 text-center">
+                    <input type="checkbox" class="collection-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-collection="${escapeHtml(col)}" onclick="event.stopPropagation(); window._collectionsOnCheckboxChange && window._collectionsOnCheckboxChange(event)">
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-blue-100 group-hover:text-blue-500 transition">
+                            <i class="fas fa-table text-xs"></i>
+                        </div>
+                        <span class="text-sm font-medium text-slate-700">${escapeHtml(col)}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button type="button" class="text-xs font-semibold text-blue-600 hover:underline" onclick="event.stopPropagation(); window._selectCollection(this.closest('tr').dataset.collection)">เปิดดูข้อมูล</button>
+                </td>
+            </tr>
+        `).join('');
+        tbody.innerHTML = rows;
+    }
+
+    function applyFilter() {
+        const q = filterText.trim().toLowerCase();
+        const filtered = q ? allCollections.filter(c => c.toLowerCase().includes(q)) : allCollections;
+        renderTableRows(filtered);
+    }
+
+    function updateDelButton() {
+        const checked = document.querySelectorAll('#collections-view .collection-checkbox:checked');
+        const btn = document.getElementById('btn-del-collections');
+        if (!btn) return;
+        if (checked.length > 0) {
+            btn.classList.remove('hidden');
+            btn.querySelector('.btn-del-count').textContent = checked.length > 0 ? ` (${checked.length})` : '';
+        } else {
+            btn.classList.add('hidden');
+        }
+    }
+
+    window._collectionsOnCheckboxChange = function (event) {
+        event.stopPropagation();
+        updateDelButton();
+    };
+
+    window._collectionsToggleAll = function (event) {
+        document.querySelectorAll('#collections-view .collection-checkbox').forEach(cb => { cb.checked = event.target.checked; });
+        updateDelButton();
+    };
+
     async function loadCollections() {
         if (!window.currentDatabase) return;
 
         const container = document.getElementById('collections-view');
         container.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                กำลังโหลด collections...
+            <div class="flex-1 flex flex-col overflow-hidden p-6 md:p-8">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 flex flex-col overflow-hidden flex items-center justify-center">
+                    <div class="loading text-center text-gray-500">
+                        <div class="spinner"></div>
+                        กำลังโหลด collections...
+                    </div>
+                </div>
             </div>
         `;
 
@@ -51,91 +102,111 @@
             if (result.success) {
                 displayCollections(result.collections);
             } else {
-                container.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+                container.innerHTML = `
+                    <div class="flex-1 flex flex-col overflow-hidden p-6 md:p-8">
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 flex items-center justify-center p-8">
+                            <div class="alert alert-danger">${escapeHtml(result.message)}</div>
+                        </div>
+                    </div>
+                `;
             }
         } catch (error) {
-            container.innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลด collections</div>';
+            container.innerHTML = `
+                <div class="flex-1 flex flex-col overflow-hidden p-6 md:p-8">
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 flex items-center justify-center p-8">
+                        <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลด collections</div>
+                    </div>
+                </div>
+            `;
             console.error(error);
         }
     }
 
     function displayCollections(collections) {
         const container = document.getElementById('collections-view');
-        document.getElementById('data-stats').textContent = `${collections.length} collections`;
+        allCollections = collections || [];
+        filterText = '';
+
+        document.getElementById('data-title').innerHTML = '<i class="fas fa-folder-open text-blue-500 mr-2"></i>ฐานข้อมูล: ' + escapeHtml(window.currentDatabase);
+        document.getElementById('data-stats').innerHTML = 'ทั้งหมด <span class="text-blue-600 font-semibold">' + allCollections.length + '</span> คอลเลกชัน';
+
+        const actionsEl = document.getElementById('data-header-actions');
+        if (actionsEl) {
+            actionsEl.innerHTML = `
+                <button type="button" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition shadow-sm shadow-emerald-100" onclick="window._importCollection()">
+                    <i class="fas fa-file-import"></i> Import
+                </button>
+                <button type="button" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition shadow-sm shadow-blue-100" onclick="window._exportSelectedCollections()">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+                <button type="button" id="btn-del-collections" class="hidden flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition" onclick="window._deleteSelectedCollections()">
+                    <i class="fas fa-trash-alt"></i> Del<span class="btn-del-count"></span>
+                </button>
+            `;
+        }
 
         if (collections.length === 0) {
-            container.innerHTML = '<div class="no-data">ไม่มี collections ในฐานข้อมูลนี้</div>';
+            container.innerHTML = `
+                <div class="flex-1 flex flex-col overflow-hidden p-6 md:p-8">
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 flex items-center justify-center">
+                        <p class="text-gray-400 text-sm">ไม่มี collections ในฐานข้อมูลนี้</p>
+                    </div>
+                </div>
+            `;
             return;
         }
 
-        const header = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div>
-                    <button class="btn btn-success" onclick="window._importCollection()">📥 Import</button>
-                    <button class="btn btn-primary" onclick="window._exportSelectedCollections()" style="margin-left: 5px;">📤 Export</button>
+        container.innerHTML = `
+            <div class="flex-1 flex flex-col overflow-hidden p-6 md:p-8">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 flex flex-col overflow-hidden min-h-0">
+                    <div class="p-4 border-b border-gray-100 bg-gray-50/30 flex items-center gap-4">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                            <input type="text" id="collections-search" placeholder="ค้นหารายชื่อคอลเลกชัน..." class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto collection-scrollbar min-h-0">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-white shadow-[0_1px_0_0_rgba(0,0,0,0.05)] z-10">
+                                <tr class="text-gray-400 text-[11px] uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-bold w-12 text-center">
+                                        <input type="checkbox" id="select-all-collections" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" title="เลือกทั้งหมด">
+                                    </th>
+                                    <th class="px-6 py-4 font-bold">ชื่อ Collection</th>
+                                    <th class="px-6 py-4 font-bold text-right">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="collections-tbody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <button class="btn-del" id="btn-del-collections" onclick="window._deleteSelectedCollections()">🗑️ Del</button>
             </div>
         `;
 
-        const rows = collections.map(col => `
-            <tr style="cursor: pointer;" onclick="if(event.target.type !== 'checkbox') window._selectCollection('${col}')">
-                <td style="width: 50px; text-align: center;">
-                    <input type="checkbox" class="collection-checkbox" data-collection="${col}" onclick="onCheckboxChange(event)">
-                </td>
-                <td>
-                    <span style="display: flex; align-items: center; gap: 8px;">📄 ${col}</span>
-                </td>
-            </tr>
-        `).join('');
+        const tbody = document.getElementById('collections-tbody');
+        document.getElementById('select-all-collections').addEventListener('click', function (e) {
+            document.querySelectorAll('#collections-view .collection-checkbox').forEach(cb => { cb.checked = e.target.checked; });
+            updateDelButton();
+        });
 
-        const tableHTML = `
-            <div style="overflow-y: auto; max-height: calc(100vh - 260px); border: 1px solid #e9ecef; border-radius: 5px;">
-                <table class="data-table" style="background: white; margin: 0; width: 100%;">
-                    <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);">
-                        <tr>
-                            <th style="width: 50px; text-align: center;">
-                                <input type="checkbox" id="select-all-collections" onclick="toggleAllCollections(event)" title="เลือกทั้งหมด">
-                            </th>
-                            <th>ชื่อ Collection</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            </div>
-        `;
-        container.innerHTML = header + tableHTML;
+        document.getElementById('collections-search').addEventListener('input', function () {
+            filterText = this.value;
+            applyFilter();
+        });
+
+        tbody.addEventListener('click', function (e) {
+            if (e.target.type === 'checkbox' || e.target.closest('button')) return;
+            const tr = e.target.closest('tr');
+            if (tr && tr.dataset.collection) window._selectCollection(tr.dataset.collection);
+        });
+
+        renderTableRows(allCollections);
     }
 
-    function toggleAllCollections(event) {
-        document.querySelectorAll('.collection-checkbox').forEach(cb => { cb.checked = event.target.checked; });
-        updateDelButton();
-    }
-
-    function onCheckboxChange(event) {
-        event.stopPropagation();
-        updateDelButton();
-    }
-
-    function updateDelButton() {
-        const checked = document.querySelectorAll('.collection-checkbox:checked');
-        const btn = document.getElementById('btn-del-collections');
-        if (!btn) return;
-        if (checked.length > 0) {
-            btn.classList.add('show');
-            btn.textContent = `🗑️ Del (${checked.length})`;
-        } else {
-            btn.classList.remove('show');
-            btn.textContent = '🗑️ Del';
-        }
-    }
-
-    // ---- expose เป็น window functions ----
     window._selectCollection = async function (collectionName) {
         window.currentCollection = collectionName;
-        document.getElementById('data-title').textContent = `${window.currentDatabase} / ${collectionName}`;
+        document.getElementById('data-title').textContent = window.currentDatabase + ' / ' + collectionName;
         document.getElementById('data-stats').textContent = '';
-        // search-form และ delete-btn อยู่ใน data view เท่านั้น ไม่ต้อง hide ตรงนี้
         window._navigate('data');
     };
 
@@ -158,7 +229,7 @@
     };
 
     window._exportSelectedCollections = async function () {
-        const checked = document.querySelectorAll('.collection-checkbox:checked');
+        const checked = document.querySelectorAll('#collections-view .collection-checkbox:checked');
         if (checked.length === 0) { window.showAlert('กรุณาเลือก collection ที่ต้องการส่งออก', 'แจ้งเตือน', 'warning'); return; }
         const names = Array.from(checked).map(cb => cb.dataset.collection);
         try {
@@ -176,11 +247,11 @@
     };
 
     window._deleteSelectedCollections = async function () {
-        const checked = document.querySelectorAll('.collection-checkbox:checked');
+        const checked = document.querySelectorAll('#collections-view .collection-checkbox:checked');
         if (checked.length === 0) { window.showAlert('กรุณาเลือก collection ที่ต้องการลบ', 'แจ้งเตือน', 'warning'); return; }
         const names = Array.from(checked).map(cb => cb.dataset.collection);
-        const msg = `คุณแน่ใจหรือไม่ที่จะลบ ${names.length} collections?\n\n${names.join('\n')}\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!`;
-        if (!await window.showConfirm(msg, '⚠️ ยืนยันการลบ Collections')) return;
+        const msg = 'คุณแน่ใจหรือไม่ที่จะลบ ' + names.length + ' collections?\n\n' + names.join('\n') + '\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!';
+        if (!await window.showConfirm(msg, 'ยืนยันการลบ Collections')) return;
         try {
             const result = await eel.drop_collections(window.currentConnection.name, window.currentDatabase, names)();
             if (result.success) {
@@ -194,7 +265,6 @@
         }
     };
 
-    // โหลดทันทีเมื่อ view นี้ mount
     loadCollections();
 })();
 </script>

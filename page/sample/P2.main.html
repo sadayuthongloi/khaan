@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Manager - Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden text-slate-700">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-20">
+        <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <h1 class="font-bold text-blue-600">MongoDB Manager</h1>
+                <p class="text-[10px] text-gray-400 font-mono leading-tight">Host: localhost:27017</p>
+            </div>
+            <button class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        
+        <div class="p-4 bg-gray-50/50">
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">ฐานข้อมูล</span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-100 transition">
+                <i class="fas fa-database text-xs opacity-80"></i>
+                <span class="text-sm font-medium">endoindex</span>
+            </button>
+            
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition group">
+                <i class="fas fa-database text-xs text-gray-300 group-hover:text-blue-400 transition"></i>
+                <span class="text-sm">aiagent</span>
+            </button>
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition group">
+                <i class="fas fa-database text-xs text-gray-300 group-hover:text-blue-400 transition"></i>
+                <span class="text-sm">database</span>
+            </button>
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition group">
+                <i class="fas fa-database text-xs text-gray-300 group-hover:text-blue-400 transition"></i>
+                <span class="text-sm">orthanc_db</span>
+            </button>
+        </nav>
+    </aside>
+
+    <aside class="w-56 bg-white border-r border-gray-200 flex flex-col z-10">
+        <div class="p-4 border-b border-gray-100 bg-white">
+            <div class="relative">
+                <i class="fas fa-filter absolute left-3 top-2.5 text-[10px] text-gray-300"></i>
+                <input type="text" placeholder="Filter collections..." class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-[12px] focus:outline-none focus:ring-1 focus:ring-blue-400">
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            <span class="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase">Collections</span>
+            <button class="w-full text-left px-3 py-2 text-sm text-blue-600 font-semibold bg-blue-50/50 rounded-lg">Users</button>
+            <button class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 rounded-lg transition">Logs</button>
+            <button class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 rounded-lg transition">Products</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 bg-white">
+        <header class="h-16 border-b border-gray-200 flex items-center justify-between px-6">
+            <div class="flex items-center gap-2">
+                <span class="text-gray-400 text-sm">endoindex</span>
+                <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+                <span class="font-bold text-gray-800">Users</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm">
+                    <i class="fas fa-plus mr-1.5"></i> Add Document
+                </button>
+                <button class="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition">
+                    <i class="fas fa-sync-alt text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="p-4 bg-gray-50/30 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="flex bg-gray-100 p-1 rounded-lg">
+                    <button class="px-3 py-1 bg-white text-blue-600 shadow-sm rounded-md text-xs font-bold">Table</button>
+                    <button class="px-3 py-1 text-gray-400 text-xs font-medium">JSON</button>
+                </div>
+            </div>
+            <div class="text-[12px] text-gray-400 italic">Showing 1-20 of 1,240 documents</div>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center p-12 text-center overflow-y-auto">
+            <div class="max-w-xs">
+                <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-100">
+                    <i class="fas fa-table-list text-gray-300 text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">เลือก Collection เพื่อดูข้อมูล</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">คลิกเลือกคอลเลกชันจากรายการด้านซ้ายเพื่อเรียกดู ตรวจสอบ และแก้ไขข้อมูลของคุณ</p>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

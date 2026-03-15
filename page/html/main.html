@@ -5,18 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MongoDB Manager - Main</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
         /* P2 · Main Shell */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
+            font-family: 'Sarabun', sans-serif;
+            background: #f9fafb;
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            color: #334155;
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
@@ -27,7 +32,7 @@
             position: fixed;
             top: 12px;
             right: 16px;
-            background: #0a58ca;
+            background: #2563eb;
             color: white;
             font-size: 11px;
             font-weight: 700;
@@ -40,20 +45,6 @@
             user-select: none;
         }
 
-        .header {
-            background: #f4f6f9;
-            color: #333;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            flex-shrink: 0;
-        }
-        .header h1 { font-size: 1.8em; color: #333; }
-        .connection-info { display: flex; align-items: center; gap: 20px; }
-        .connection-details { font-size: 0.9em; color: #555; }
-
         .btn {
             padding: 8px 16px;
             border: none;
@@ -64,8 +55,8 @@
             text-decoration: none;
             display: inline-block;
         }
-        .btn-primary { background: #0a58ca; color: white; }
-        .btn-primary:hover { background: #084298; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
         .btn-success { background: #28a745; color: white; }
         .btn-success:hover { background: #218838; }
         .btn-danger { background: #dc3545; color: white; }
@@ -77,45 +68,16 @@
         .btn-warning { background: #ffc107; color: #212529; }
         .btn-warning:hover { background: #e0a800; }
 
-        .main-container { display: flex; flex: 1; min-height: 0; }
+        .main-container { display: flex; flex: 1; min-height: 0; min-width: 0; }
 
-        .sidebar {
-            width: 300px;
-            background: white;
-            border-right: 1px solid #e9ecef;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .databases-section {
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .databases-section h3 { color: #333; margin-bottom: 10px; font-size: 1em; }
-
-        .database-item {
-            padding: 10px 15px;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .database-item:hover { background: #e9ecef; border-color: #0a58ca; }
-        .database-item.active { background: #0a58ca; color: white; border-color: #0a58ca; }
-        .database-name-label {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-weight: 500;
-        }
+        .sidebar-wrap { width: 16rem; flex-shrink: 0; }
+        .db-item-btn { width: 100%; text-align: left; cursor: pointer; transition: all 0.2s; border: none; background: none; font-family: inherit; }
+        .db-item-btn:hover { background: #f3f4f6; }
+        .db-item-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
+        .db-item-btn.active .db-item-icon { color: rgba(255,255,255,0.8); }
+        .db-item-btn:not(.active) .db-item-icon { color: #d1d5db; }
+        .db-item-btn:hover:not(.active) .db-item-icon { color: #60a5fa; }
+        .database-name-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* Content area */
         .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
@@ -133,16 +95,17 @@
         }
 
         .data-header {
-            padding: 20px;
-            border-bottom: 1px solid #e9ecef;
-            background: #f8f9fa;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #fff;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
+            min-height: 4rem;
         }
-        .data-title { font-size: 1.3em; font-weight: bold; color: #333; margin-bottom: 10px; }
-        .data-stats { color: #666; font-size: 0.9em; }
+        .data-title { font-size: 1.1em; font-weight: bold; color: #1f2937; margin-bottom: 4px; }
+        .data-stats { color: #9ca3af; font-size: 0.875rem; }
         .data-header-right { display: flex; align-items: center; gap: 15px; }
 
         /* View container */
@@ -181,7 +144,7 @@
         .loading { text-align: center; padding: 40px; color: #666; }
         .spinner {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #0a58ca;
+            border-top: 3px solid #2563eb;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -236,33 +199,29 @@
     </style>
 </head>
 
-<body>
+<body class="bg-gray-50 flex h-screen overflow-hidden text-slate-700">
     <div class="page-id-badge" id="page-id-badge">P2 · Main</div>
 
-    <!-- Header -->
-    <div class="header">
-        <div>
-            <h1>MongoDB Manager</h1>
-            <div class="connection-info">
-                <div class="connection-details" id="connection-details"></div>
-            </div>
-        </div>
-        <button class="btn btn-danger" onclick="goBack()">← กลับ</button>
-    </div>
-
     <div class="main-container">
-        <!-- Sidebar: Database list -->
-        <div class="sidebar">
-            <div class="databases-section">
-                <h3>🗄️ ฐานข้อมูล</h3>
-                <div id="databases-container">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        กำลังโหลดฐานข้อมูล...
-                    </div>
+        <!-- Sidebar: header + database list (P2 sample style) -->
+        <aside class="sidebar-wrap bg-white border-r border-gray-200 flex flex-col shadow-sm z-20">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h1 class="font-bold text-blue-600">MongoDB Manager</h1>
+                    <p class="text-[10px] text-gray-400 font-mono leading-tight" id="connection-details">—</p>
                 </div>
+                <button type="button" class="text-gray-400 hover:text-red-500 transition p-1" onclick="goBack()" title="กลับ"><i class="fas fa-sign-out-alt"></i></button>
             </div>
-        </div>
+            <div class="p-4 bg-gray-50/50">
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">ฐานข้อมูล</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1 min-h-0" id="databases-container">
+                <div class="loading py-8 text-center text-gray-500 text-sm">
+                    <div class="spinner"></div>
+                    กำลังโหลดฐานข้อมูล...
+                </div>
+            </nav>
+        </aside>
 
         <!-- Main content -->
         <div class="content">
@@ -272,7 +231,8 @@
                         <div class="data-title" id="data-title">เลือกฐานข้อมูลและ Collection เพื่อดูข้อมูล</div>
                         <div class="data-stats" id="data-stats"></div>
                     </div>
-                    <div class="data-header-right">
+                    <div class="data-header-right flex items-center gap-3">
+                        <div id="data-header-actions" class="flex items-center gap-3"></div>
                         <button class="btn btn-danger" id="delete-btn" onclick="window._showDeleteModal && window._showDeleteModal()" style="display: none;">
                             🗑️ ล้างข้อมูล
                         </button>
@@ -281,8 +241,14 @@
 
                 <!-- Views load here -->
                 <div id="view-container">
-                    <div class="data-content">
-                        <div class="no-data">เลือกฐานข้อมูลจากรายการด้านซ้ายเพื่อเริ่มต้น</div>
+                    <div class="data-content flex flex-col items-center justify-center p-12 text-center min-h-full">
+                        <div class="max-w-xs">
+                            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-100">
+                                <i class="fas fa-table-list text-gray-300 text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">เลือกฐานข้อมูลและ Collection เพื่อดูข้อมูล</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">คลิกเลือกฐานข้อมูลจากรายการด้านซ้าย จากนั้นเลือก collection เพื่อเรียกดู ตรวจสอบ และแก้ไขข้อมูล</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -355,6 +321,8 @@
 
         // ========== Router ==========
         window._navigate = async function (view) {
+            const actions = document.getElementById('data-header-actions');
+            if (actions) actions.innerHTML = '';
             const container = document.getElementById('view-container');
             container.innerHTML = '<div class="data-content"><div class="loading"><div class="spinner"></div>กำลังโหลด...</div></div>';
 
@@ -429,13 +397,14 @@
         function displayDatabases(databases) {
             const container = document.getElementById('databases-container');
             if (databases.length === 0) {
-                container.innerHTML = '<div class="no-data">ไม่พบฐานข้อมูล</div>';
+                container.innerHTML = '<div class="no-data text-sm text-gray-500 py-4">ไม่พบฐานข้อมูล</div>';
                 return;
             }
             container.innerHTML = databases.map(db => `
-                <div class="database-item" onclick="selectDatabase('${db}', this)">
-                    <span class="database-name-label">🗄️ ${db}</span>
-                </div>
+                <button type="button" class="db-item-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500" onclick="selectDatabase('${db}', this)">
+                    <i class="fas fa-database text-xs db-item-icon"></i>
+                    <span class="database-name-label font-medium">${db}</span>
+                </button>
             `).join('');
         }
 
@@ -444,7 +413,7 @@
             window.currentCollection = null;
             window.currentEditingDocumentId = null;
 
-            document.querySelectorAll('.database-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.db-item-btn').forEach(i => i.classList.remove('active'));
             if (el) el.classList.add('active');
 
             document.getElementById('data-title').textContent = `ฐานข้อมูล: ${dbName}`;
@@ -495,10 +464,8 @@
             const connectionData = sessionStorage.getItem('currentConnection');
             if (connectionData) {
                 window.currentConnection = JSON.parse(connectionData);
-                document.getElementById('connection-details').innerHTML = `
-                    <strong>${window.currentConnection.name}</strong><br>
-                    ${window.currentConnection.host}:${window.currentConnection.port}
-                `;
+                const el = document.getElementById('connection-details');
+                el.innerHTML = `<span class="font-semibold text-gray-600">${window.currentConnection.name}</span><br>Host: ${window.currentConnection.host}:${window.currentConnection.port}`;
                 loadDatabases();
             } else {
                 window.goBack();
