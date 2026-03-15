@@ -2,98 +2,97 @@
 <!-- State read from window: currentConnection, currentDatabase, currentCollection -->
 
 <style>
-    .search-form {
-        background: white;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        flex-shrink: 0;
-        border-bottom: 1px solid #e9ecef;
-    }
-    .search-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    .search-group {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    .search-group label {
-        font-size: 0.9em;
-        font-weight: bold;
-        color: #333;
-    }
-    .search-group select, .search-group input {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        min-width: 120px;
-    }
-    .search-group select:focus, .search-group input:focus {
-        outline: none;
-        border-color: #0a58ca;
-        box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
-    }
-    .search-actions {
-        display: flex;
-        gap: 10px;
-        align-items: end;
-    }
+    .data-table-row:hover { background-color: #f1f5f9; }
+    .data-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .data-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
 
-<!-- Search Form -->
-<div class="search-form" id="search-form" style="display: none;">
-    <div class="search-row">
-        <div class="search-group">
-            <label for="search-field">ฟิลด์</label>
-            <select id="search-field">
+<!-- Search Toolbar (P2-B sample style) -->
+<div class="bg-white border-b border-gray-200 p-4 shadow-sm" id="search-form" style="display: none;">
+    <div class="flex flex-wrap items-end gap-4">
+        <div class="flex-1 min-w-[150px]">
+            <label for="search-field" class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">ฟิลด์</label>
+            <select id="search-field" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
                 <option value="">เลือกฟิลด์</option>
             </select>
         </div>
-        <div class="search-group">
-            <label for="search-operator">เงื่อนไข</label>
-            <select id="search-operator">
+        <div class="flex-1 min-w-[150px]">
+            <label for="search-operator" class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">เงื่อนไข</label>
+            <select id="search-operator" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
                 <option value="">เลือกเงื่อนไข</option>
-                <option value="=">= (เท่ากับ)</option>
-                <option value="like">like (คล้าย)</option>
+                <option value="=">เท่ากับ (=)</option>
+                <option value="like">ประกอบด้วย (Like)</option>
             </select>
         </div>
-        <div class="search-group">
-            <label for="search-value">ค่า</label>
-            <input type="text" id="search-value" placeholder="กรอกค่าที่ต้องการค้นหา">
+        <div class="flex-[2] min-w-[200px]">
+            <label for="search-value" class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">ค่าที่ต้องการค้นหา</label>
+            <input type="text" id="search-value" placeholder="กรอกคำค้นหา..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
         </div>
-        <div class="search-actions">
-            <button class="btn btn-primary" onclick="performSearch()">🔍 ค้นหา</button>
-            <button class="btn btn-secondary" onclick="clearSearch()">🗑️ ล้างการค้นหา</button>
-            <button class="btn btn-info" id="sort-btn" onclick="toggleSort()" title="เรียงใหม่สุด → เก่าสุด">🔽 Z→A (ใหม่→เก่า)</button>
+        <div class="flex gap-2">
+            <button type="button" class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm" onclick="performSearch()">
+                <i class="fas fa-search"></i> ค้นหา
+            </button>
+            <button type="button" class="px-5 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-200 transition" onclick="clearSearch()" title="ล้างการค้นหา">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+            <button type="button" id="sort-btn" class="px-5 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition flex items-center gap-2" onclick="toggleSort()" title="เรียงใหม่สุด → เก่าสุด">
+                <i class="fas fa-sort-amount-down"></i> Z → A
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Data Content -->
-<div class="data-content" id="data-content">
-    <div class="loading">
-        <div class="spinner"></div>
-        กำลังโหลดข้อมูล...
+<div class="data-content flex-1 flex flex-col overflow-hidden min-h-0" id="data-content">
+    <div class="loading flex items-center justify-center flex-1">
+        <div class="text-center">
+            <div class="spinner"></div>
+            <p class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</p>
+        </div>
     </div>
 </div>
 
 <script>
 (function () {
     let currentFields = [];
-    let lastLoadedData = [];   // เก็บข้อมูลล่าสุดไว้ sort
-    let sortDesc = false;      // false = A→Z (เก่า→ใหม่), true = Z→A (ใหม่→เก่า)
+    let lastLoadedData = [];
+    let sortDesc = false;
 
-    // ---- โหลดข้อมูลทันทีเมื่อ mount ----
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function setHeaderTitle(db, collection) {
+        const el = document.getElementById('data-title');
+        if (!el) return;
+        el.innerHTML = '<div class="flex items-center gap-2 text-sm"><span class="text-gray-400">' + escapeHtml(db) + '</span><i class="fas fa-chevron-right text-[10px] text-gray-300"></i><span class="font-bold text-slate-800 text-lg">' + escapeHtml(collection) + '</span></div>';
+    }
+
+    function setHeaderStats(count) {
+        const el = document.getElementById('data-stats');
+        if (!el) return;
+        el.innerHTML = '<span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[11px]">' + escapeHtml(String(count)) + ' เอกสาร</span>';
+    }
+
     async function init() {
         if (!window.currentCollection) return;
-        document.getElementById('data-title').textContent = `${window.currentDatabase} / ${window.currentCollection}`;
-        document.getElementById('data-stats').textContent = '';
+        setHeaderTitle(window.currentDatabase, window.currentCollection);
+        setHeaderStats('');
         document.getElementById('search-form').style.display = 'none';
         document.getElementById('delete-btn').style.display = 'none';
 
@@ -103,7 +102,12 @@
 
     async function loadData(limit, searchField = '', searchOp = '', searchVal = '') {
         document.getElementById('data-content').innerHTML = `
-            <div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>
+            <div class="loading flex items-center justify-center flex-1">
+                <div class="text-center">
+                    <div class="spinner"></div>
+                    <p class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</p>
+                </div>
+            </div>
         `;
         try {
             const result = await eel.get_collection_data(
@@ -114,50 +118,65 @@
                 lastLoadedData = result.data;
                 const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;
                 displayData(toShow);
+            } else {
+                document.getElementById('data-content').innerHTML = '<div class="flex-1 flex items-center justify-center p-8"><div class="alert alert-danger">' + escapeHtml(result.message) + '</div></div>';
             }
-            else document.getElementById('data-content').innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
         } catch (e) {
-            document.getElementById('data-content').innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+            document.getElementById('data-content').innerHTML = '<div class="flex-1 flex items-center justify-center p-8"><div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</div></div>';
         }
+    }
+
+    function formatValue(value, fieldName) {
+        if (value === null || value === undefined) return '<span class="text-xs italic text-gray-300">null</span>';
+        if (Array.isArray(value)) return '<span class="text-xs italic text-gray-400">[array]</span>';
+        if (typeof value === 'object') return '<span class="text-xs italic text-gray-400">[object]</span>';
+        const str = String(value);
+        const escaped = escapeHtml(str.length > 100 ? str.substring(0, 100) + '...' : str);
+        if (fieldName === '_id') return '<span class="text-xs font-mono text-blue-600 bg-blue-50/30">' + escaped + '</span>';
+        return '<span class="text-sm text-slate-700">' + escaped + '</span>';
     }
 
     function displayData(data) {
         const container = document.getElementById('data-content');
         if (data.length === 0) {
-            container.innerHTML = '<div class="no-data">ไม่มีข้อมูลใน collection นี้</div>';
-            document.getElementById('data-stats').textContent = '0 เอกสาร';
+            container.innerHTML = '<div class="flex-1 flex items-center justify-center min-h-0"><p class="text-gray-400 text-sm">ไม่มีข้อมูลใน collection นี้</p></div>';
+            setHeaderStats(0);
             document.getElementById('delete-btn').style.display = 'none';
             return;
         }
 
-        document.getElementById('data-stats').textContent = `${data.length} เอกสาร (แสดง 50 รายการแรก)`;
+        setHeaderStats(data.length);
         document.getElementById('search-form').style.display = 'block';
         document.getElementById('delete-btn').style.display = 'inline-block';
 
         const fields = Object.keys(data[0]);
-        const tableHTML = `
-            <table class="data-table">
-                <thead>
-                    <tr>${fields.map(f => `<th>${f}</th>`).join('')}</tr>
-                </thead>
-                <tbody>
-                    ${data.map(doc => `
-                        <tr ondblclick="window._editDocument('${doc._id}')" style="cursor: pointer;" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">
-                            ${fields.map(f => `<td>${formatValue(doc[f])}</td>`).join('')}
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-        container.innerHTML = tableHTML;
-    }
+        const theadRow = '<tr class="bg-gray-50/50 text-[11px] uppercase tracking-wider text-gray-400 border-b border-gray-100">' +
+            fields.map(f => '<th class="px-6 py-4 font-bold">' + escapeHtml(f) + '</th>').join('') + '</tr>';
+        const rows = data.map(doc => {
+            const docId = doc._id != null ? String(doc._id) : '';
+            const docIdAttr = escapeAttr(docId);
+            return '<tr class="data-table-row transition group cursor-pointer" data-doc-id="' + docIdAttr + '" ondblclick="window._editDocument(this.dataset.docId)" title="ดับเบิลคลิกเพื่อดู/แก้ไขข้อมูล">' +
+                fields.map(f => '<td class="px-6 py-4">' + formatValue(doc[f], f) + '</td>').join('') + '</tr>';
+        }).join('');
 
-    function formatValue(value) {
-        if (value === null || value === undefined) return '<em>null</em>';
-        if (Array.isArray(value)) return '<span style="color:#6c757d;font-style:italic">[array]</span>';
-        if (typeof value === 'object') return '<span style="color:#6c757d;font-style:italic">[object]</span>';
-        if (typeof value === 'string' && value.length > 100) return value.substring(0, 100) + '...';
-        return String(value);
+        const n = data.length;
+        const footerLeft = 'แสดง 1–' + n + ' ของ ' + n + ' เอกสาร';
+        const footerRight = '<button type="button" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-blue-600 text-white shadow-sm text-xs">1</button>';
+
+        container.innerHTML = `
+            <div class="flex-1 overflow-auto data-scrollbar p-6 min-h-0">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-w-max">
+                    <table class="w-full text-left border-collapse">
+                        <thead>${theadRow}</thead>
+                        <tbody class="divide-y divide-gray-50">${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+            <footer class="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-between text-xs text-gray-500 flex-shrink-0">
+                <div>${escapeHtml(footerLeft)}</div>
+                <div class="flex gap-1">${footerRight}</div>
+            </footer>
+        `;
     }
 
     async function loadCollectionFields(collectionName) {
@@ -170,7 +189,8 @@
                     sel.innerHTML = '<option value="">เลือกฟิลด์</option>';
                     result.fields.forEach(f => {
                         const opt = document.createElement('option');
-                        opt.value = f; opt.textContent = f;
+                        opt.value = f;
+                        opt.textContent = f;
                         sel.appendChild(opt);
                     });
                 }
@@ -178,7 +198,6 @@
         } catch (e) { console.error(e); }
     }
 
-    // ---- Search ----
     window.performSearch = async function () {
         const field = document.getElementById('search-field').value;
         const op = document.getElementById('search-operator').value;
@@ -194,32 +213,29 @@
         await loadData(50);
     };
 
-    // ---- Sort Toggle ----
     window.toggleSort = function () {
         sortDesc = !sortDesc;
         const btn = document.getElementById('sort-btn');
         if (btn) {
             if (sortDesc) {
-                btn.textContent = '🔼 A→Z (เก่า→ใหม่)';
+                btn.innerHTML = '<i class="fas fa-sort-amount-up"></i> A → Z';
                 btn.title = 'เรียงเก่าสุด → ใหม่สุด (คลิกเพื่อสลับกลับ)';
-                btn.style.background = '#6c757d';
+                btn.className = 'px-5 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-200 transition flex items-center gap-2';
             } else {
-                btn.textContent = '🔽 Z→A (ใหม่→เก่า)';
+                btn.innerHTML = '<i class="fas fa-sort-amount-down"></i> Z → A';
                 btn.title = 'เรียงใหม่สุด → เก่าสุด';
-                btn.style.background = '#17a2b8';
+                btn.className = 'px-5 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition flex items-center gap-2';
             }
         }
         const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;
         displayData(toShow);
     };
 
-    // ---- Navigate to Editor ----
     window._editDocument = function (documentId) {
         window.currentEditingDocumentId = documentId;
         window._navigate('editor');
     };
 
-    // ---- Delete modal (triggered from header button) ----
     window._showDeleteModal = function () {
         if (!window.currentCollection) return;
         document.getElementById('modal-collection-name').textContent = window.currentCollection;
@@ -252,7 +268,6 @@
         }
     };
 
-    // event listeners สำหรับ delete modal
     const deleteModal = document.getElementById('delete-modal');
     if (deleteModal) {
         deleteModal.addEventListener('click', function (e) { if (e.target === this) window._hideDeleteModal(); });

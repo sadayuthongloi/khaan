@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Manager - Data Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .data-table-row:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] flex h-screen overflow-hidden text-slate-700">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+        <div class="p-6 border-b border-gray-50">
+            <h1 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+                <i class="fas fa-database"></i> MongoDB Manager
+            </h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto p-3 space-y-1">
+            <div class="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Databases</div>
+            <button class="w-full flex items-center gap-3 px-4 py-2.5 bg-blue-600 text-white rounded-xl shadow-md">
+                <i class="fas fa-server text-[10px]"></i>
+                <span class="text-sm font-medium">endoindex</span>
+            </button>
+            </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm">
+                <span class="text-gray-400">endoindex</span>
+                <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+                <span class="font-bold text-slate-800 text-lg">tb_case</span>
+                <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[11px]">50 เอกสาร</span>
+            </div>
+            <button class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-semibold transition">
+                <i class="fas fa-trash-alt"></i> ล้างข้อมูล
+            </button>
+        </header>
+
+        <div class="bg-white border-b border-gray-200 p-4 shadow-sm">
+            <div class="flex flex-wrap items-end gap-4">
+                <div class="flex-1 min-w-[150px]">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">ฟิลด์</label>
+                    <select class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <option>เลือกฟิลด์</option>
+                        <option>_id</option>
+                        <option>firstname</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[150px]">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">เงื่อนไข</label>
+                    <select class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <option>เลือกเงื่อนไข</option>
+                        <option>เท่ากับ (=)</option>
+                        <option>ประกอบด้วย (Like)</option>
+                    </select>
+                </div>
+                <div class="flex-[2] min-w-[200px]">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">ค่าที่ต้องการค้นหา</label>
+                    <input type="text" placeholder="กรอกคำค้นหา..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-search"></i> ค้นหา
+                    </button>
+                    <button class="px-5 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-200 transition">
+                        <i class="fas fa-redo-alt"></i>
+                    </button>
+                    <button class="px-5 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition flex items-center gap-2">
+                        <i class="fas fa-sort-amount-down"></i> Z → A
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-auto custom-scrollbar p-6">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-w-max">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 text-[11px] uppercase tracking-wider text-gray-400 border-b border-gray-100">
+                            <th class="px-6 py-4 font-bold">_id</th>
+                            <th class="px-6 py-4 font-bold">prefix</th>
+                            <th class="px-6 py-4 font-bold">firstname</th>
+                            <th class="px-6 py-4 font-bold">lastname</th>
+                            <th class="px-6 py-4 font-bold">hn</th>
+                            <th class="px-6 py-4 font-bold">case_hn</th>
+                            <th class="px-6 py-4 font-bold">hntemp</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr class="data-table-row transition group">
+                            <td class="px-6 py-4 text-xs font-mono text-blue-600 bg-blue-50/30">68483ff4ed2bd5025f09a058</td>
+                            <td class="px-6 py-4 text-sm">MR.</td>
+                            <td class="px-6 py-4 text-sm font-medium text-slate-700">PATIENT</td>
+                            <td class="px-6 py-4 text-sm text-slate-700">NONAME</td>
+                            <td class="px-6 py-4 text-sm font-mono">00001</td>
+                            <td class="px-6 py-4 text-sm font-mono">00001</td>
+                            <td class="px-6 py-4 text-sm text-gray-400">20250610212347</td>
+                        </tr>
+                        <tr class="data-table-row transition group">
+                            <td class="px-6 py-4 text-xs font-mono text-blue-600 bg-blue-50/30">684a5227b21e6c251200d987</td>
+                            <td class="px-6 py-4 text-xs italic text-gray-300">null</td>
+                            <td class="px-6 py-4 text-xs italic text-gray-300">null</td>
+                            <td class="px-6 py-4 text-xs italic text-gray-300">null</td>
+                            <td class="px-6 py-4 text-sm font-mono">TEST20250612</td>
+                            <td class="px-6 py-4 text-sm font-mono">TEST20250612</td>
+                            <td class="px-6 py-4 text-xs italic text-gray-300">null</td>
+                        </tr>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-between text-xs text-gray-500">
+            <div>Page 1 of 3</div>
+            <div class="flex gap-1">
+                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:bg-gray-50 transition">1</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-blue-600 text-white shadow-sm">2</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:bg-gray-50 transition">3</button>
+            </div>
+        </footer>
+    </main>
+
+</body>
+</html>

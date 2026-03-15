@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Manager - Edit Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] flex h-screen overflow-hidden text-slate-700">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+        <div class="p-6 border-b border-gray-50">
+            <h1 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+                <i class="fas fa-database"></i> MongoDB Manager
+            </h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto p-3 space-y-1">
+            <button class="w-full flex items-center gap-3 px-4 py-2.5 bg-blue-600 text-white rounded-xl shadow-md">
+                <i class="fas fa-server text-[10px]"></i>
+                <span class="text-sm font-medium">endoindex</span>
+            </button>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                    <span>endoindex</span>
+                    <i class="fas fa-chevron-right text-[8px]"></i>
+                    <span>tb_case</span>
+                    <i class="fas fa-chevron-right text-[8px]"></i>
+                    <span class="text-blue-500 font-mono">68483ff4ed2...</span>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800">แก้ไข Document</h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-sort-alpha-down mr-2"></i>A-Z
+                </button>
+                <button class="px-4 py-2 text-sm font-bold bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 rounded-lg transition shadow-sm">
+                    <i class="fas fa-save mr-2 text-blue-500"></i>บันทึกทั้งหมด
+                </button>
+                <button class="px-4 py-2 text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition">
+                    <i class="fas fa-times mr-2"></i>ปิด
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-8">
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                
+                <div class="bg-gray-50 px-8 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Object ID</span>
+                        <code class="text-sm text-blue-600 font-medium mono bg-blue-50 px-2 py-1 rounded">68483ff4ed2bd5025f09a058</code>
+                    </div>
+                    <i class="fas fa-lock text-gray-300 text-xs"></i>
+                </div>
+
+                <div class="divide-y divide-gray-50">
+                    
+                    <div class="flex items-center px-8 py-4 hover:bg-gray-50/50 transition group">
+                        <label class="w-1/4 text-sm font-semibold text-slate-500 group-hover:text-blue-600 transition">prefix</label>
+                        <div class="flex-1 flex items-center gap-3">
+                            <input type="text" value="MR." class="flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition">
+                            <button class="opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-md uppercase">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center px-8 py-4 hover:bg-gray-50/50 transition group">
+                        <label class="w-1/4 text-sm font-semibold text-slate-500 group-hover:text-blue-600 transition">firstname</label>
+                        <div class="flex-1 flex items-center gap-3">
+                            <input type="text" value="PATIENT" class="flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition">
+                            <button class="opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-md uppercase">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center px-8 py-4 hover:bg-gray-50/50 transition group">
+                        <label class="w-1/4 text-sm font-semibold text-slate-500 group-hover:text-blue-600 transition">age</label>
+                        <div class="flex-1 flex items-center gap-3">
+                            <input type="number" value="30" class="flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition">
+                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-tighter">Number</span>
+                            <button class="opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-md uppercase">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center px-8 py-4 hover:bg-gray-50/50 transition group">
+                        <label class="w-1/4 text-sm font-semibold text-slate-500 group-hover:text-blue-600 transition">date</label>
+                        <div class="flex-1 flex items-center gap-3">
+                            <input type="text" value="2025-06-10" class="flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition">
+                            <button class="opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-md uppercase">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start px-8 py-4 hover:bg-gray-50/50 transition group">
+                        <label class="w-1/4 text-sm font-semibold text-slate-500 pt-2 group-hover:text-blue-600 transition">procedure</label>
+                        <div class="flex-1 flex items-start gap-3">
+                            <textarea rows="2" class="flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition resize-none">Laparoscopy</textarea>
+                            <button class="opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-md uppercase mt-2">Update</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto mt-6 flex justify-end gap-3 text-[11px] text-gray-400">
+                <span>Last modified: 2026-03-15 23:28</span>
+                <span>•</span>
+                <span>User: medica</span>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
