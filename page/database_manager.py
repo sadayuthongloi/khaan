@@ -1,6 +1,6 @@
 """
 MongoDB Database Manager
-จัดการการเชื่อมต่อและดำเนินการกับฐานข้อมูล MongoDB
+Manage connections and operations with MongoDB.
 """
 
 import json
@@ -11,14 +11,14 @@ from pymongo import MongoClient
 
 
 class MongoDBConnectionManager:
-    """จัดการการเชื่อมต่อ MongoDB"""
+    """Manage MongoDB connections"""
     
     def __init__(self, config_file: str = 'config.json'):
         self.config_file = config_file
         self.connections = self.load_connections()
     
     def load_connections(self) -> List[Dict]:
-        """โหลด connections จากไฟล์ config.json"""
+        """Load connections from config.json"""
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r', encoding='utf-8') as f:
@@ -26,11 +26,11 @@ class MongoDBConnectionManager:
                     return data.get('connections', [])
             return []
         except Exception as e:
-            print(f"เกิดข้อผิดพลาดในการโหลด config: {e}")
+            print(f"Error loading config: {e}")
             return []
     
     def save_connections(self) -> bool:
-        """บันทึก connections ลงไฟล์ config.json"""
+        """Save connections to config.json"""
         try:
             config_data = {
                 'connections': self.connections
@@ -39,12 +39,12 @@ class MongoDBConnectionManager:
                 json.dump(config_data, f, indent=2, ensure_ascii=False)
             return True
         except Exception as e:
-            print(f"เกิดข้อผิดพลาดในการบันทึก config: {e}")
+            print(f"Error saving config: {e}")
             return False
     
     def add_connection(self, name: str, host: str, port: int, 
                       username: str = "", password: str = "") -> bool:
-        """เพิ่ม connection ใหม่"""
+        """Add new connection"""
         try:
             new_connection = {
                 'name': name,
@@ -56,20 +56,20 @@ class MongoDBConnectionManager:
             self.connections.append(new_connection)
             return self.save_connections()
         except Exception as e:
-            print(f"เกิดข้อผิดพลาดในการเพิ่ม connection: {e}")
+            print(f"Error adding connection: {e}")
             return False
     
     def remove_connection(self, name: str) -> bool:
-        """ลบ connection ตามชื่อ"""
+        """Remove connection by name"""
         try:
             self.connections = [conn for conn in self.connections if conn['name'] != name]
             return self.save_connections()
         except Exception as e:
-            print(f"เกิดข้อผิดพลาดในการลบ connection: {e}")
+            print(f"Error removing connection: {e}")
             return False
     
     def get_connection(self, name: str) -> Optional[Dict]:
-        """ดึงข้อมูล connection ตามชื่อ"""
+        """Get connection by name"""
         for conn in self.connections:
             if conn['name'] == name:
                 return conn
@@ -77,31 +77,30 @@ class MongoDBConnectionManager:
 
 
 class MongoDBClient:
-    """จัดการการเชื่อมต่อและดำเนินการกับ MongoDB"""
+    """Manage connection and operations with MongoDB"""
     
     def __init__(self, connection: Dict):
         self.connection = connection
         self.client = None
     
     def connect(self) -> bool:
-        """เชื่อมต่อกับ MongoDB"""
+        """Connect to MongoDB"""
         try:
             connection_string = self._build_connection_string()
             self.client = MongoClient(connection_string, serverSelectionTimeoutMS=5000)
-            # ทดสอบการเชื่อมต่อ
             self.client.admin.command('ping')
             return True
         except Exception as e:
-            print(f"เกิดข้อผิดพลาดในการเชื่อมต่อ: {e}")
+            print(f"Error connecting: {e}")
             return False
     
     def disconnect(self):
-        """ปิดการเชื่อมต่อ"""
+        """Close connection"""
         if self.client:
             self.client.close()
     
     def _build_connection_string(self) -> str:
-        """สร้าง connection string"""
+        """Build connection string"""
         if self.connection['username'] and self.connection['password']:
             username = urllib.parse.quote_plus(self.connection['username'])
             password = urllib.parse.quote_plus(self.connection['password'])
@@ -110,27 +109,27 @@ class MongoDBClient:
             return f"mongodb://{self.connection['host']}:{self.connection['port']}/"
     
     def test_connection(self) -> Dict:
-        """ทดสอบการเชื่อมต่อ"""
+        """Test connection"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             self.disconnect()
             
             return {
                 'success': True,
-                'message': 'เชื่อมต่อสำเร็จ'
+                'message': 'Connected successfully'
             }
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def list_databases(self) -> Dict:
-        """ดึงรายการฐานข้อมูลทั้งหมด"""
+        """Get list of all databases"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             databases = sorted(self.client.list_database_names())
             
@@ -139,13 +138,13 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def get_collections(self, database_name: str) -> Dict:
-        """ดึงรายการ collections ในฐานข้อมูล"""
+        """Get list of collections in database"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             db = self.client[database_name]
             collections = sorted(list(db.list_collection_names()))
@@ -155,26 +154,25 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def get_collection_fields(self, database_name: str, collection_name: str) -> Dict:
-        """ดึงรายการ fields ใน collection"""
+        """Get list of fields in collection"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             db = self.client[database_name]
             collection = db[collection_name]
             
-            # ดึงข้อมูลตัวอย่างเพื่อหา fields
+            # Get sample docs to find fields
             sample_docs = list(collection.find().limit(10))
             
-            # รวบรวม fields ทั้งหมด
             fields = set()
             for doc in sample_docs:
                 fields.update(doc.keys())
             
-            # เรียงลำดับ fields ตามตัวอักษร
+            fields = sorted(list(fields))
             fields = sorted(list(fields))
             
             self.disconnect()
@@ -182,33 +180,29 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def get_collection_data(self, database_name: str, collection_name: str, limit: int = 50, 
                            search_field: str = "", search_operator: str = "", 
                            search_value: str = "") -> Dict:
-        """ดึงข้อมูลใน collection พร้อม search"""
+        """Get collection data with optional search"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             db = self.client[database_name]
             collection = db[collection_name]
             
-            # สร้าง query filter
             query_filter = {}
             if search_field and search_operator and search_value:
                 if search_operator == "=":
-                    # ค้นหาแบบเท่ากับ
                     query_filter[search_field] = search_value
                 elif search_operator == "like":
-                    # ค้นหาแบบ like (regex)
                     query_filter[search_field] = {"$regex": search_value, "$options": "i"}
             
-            # ดึงข้อมูล
             documents = list(collection.find(query_filter).limit(limit))
             
-            # แปลง ObjectId เป็น string
+            # Convert ObjectId to string
             for doc in documents:
                 if '_id' in doc:
                     doc['_id'] = str(doc['_id'])
@@ -218,16 +212,16 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
             
     def get_document(self, database_name: str, collection_name: str, document_id: str) -> Dict:
-        """ดึงข้อมูลเอกสาร 1 รายการตาม _id"""
+        """Get single document by _id"""
         from bson.objectid import ObjectId
         from bson import json_util
         
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
                 
             db = self.client[database_name]
             collection = db[collection_name]
@@ -241,7 +235,7 @@ class MongoDBClient:
             
             if not doc:
                 self.disconnect()
-                return {'success': False, 'message': 'ไม่พบเอกสารนี้'}
+                return {'success': False, 'message': 'Document not found'}
                 
             doc_json_str = json_util.dumps(doc, ensure_ascii=False, indent=4)
             
@@ -250,17 +244,17 @@ class MongoDBClient:
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
 
     def update_document(self, database_name: str, collection_name: str, document_id: str, document_json_str: str) -> Dict:
-        """อัปเดตข้อมูลเอกสาร 1 รายการ"""
+        """Update single document"""
         from bson.objectid import ObjectId
         from bson import json_util
         
         try:
             if not self.connect():
                 print("[DEBUG] update_document: Connection failed")
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
                 
             db = self.client[database_name]
             collection = db[collection_name]
@@ -271,7 +265,7 @@ class MongoDBClient:
                 update_data = json_util.loads(document_json_str)
             except Exception as e:
                 self.disconnect()
-                return {'success': False, 'message': f'รูปแบบ JSON ไม่ถูกต้อง: {str(e)}'}
+                return {'success': False, 'message': f'Invalid JSON format: {str(e)}'}
                 
             try:
                 query_id = ObjectId(document_id)
@@ -287,40 +281,40 @@ class MongoDBClient:
             self.disconnect()
             
             if result.matched_count == 0:
-                return {'success': False, 'message': 'ไม่พบเอกสารนี้ในการอัปเดต'}
+                return {'success': False, 'message': 'Document not found for update'}
                 
-            return {'success': True, 'message': 'อัปเดตข้อมูลสำเร็จ'}
+            return {'success': True, 'message': 'Document updated successfully'}
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
 
     def update_document_field(self, database_name: str, collection_name: str, document_id: str, field_key: str, field_value_json_str: str) -> Dict:
-        """อัปเดตเฉพาะ field เดียวของเอกสาร"""
+        """Update single field of document"""
         from bson.objectid import ObjectId
         from bson import json_util
         
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
                 
             db = self.client[database_name]
             collection = db[collection_name]
             
-            # แปลง value จาก JSON string
+            # Parse value from JSON string
             try:
                 field_value = json_util.loads(field_value_json_str)
             except Exception as e:
                 self.disconnect()
-                return {'success': False, 'message': f'รูปแบบ JSON ไม่ถูกต้อง: {str(e)}'}
+                return {'success': False, 'message': f'Invalid JSON format: {str(e)}'}
             
-            # แปลง document_id
+            # Parse document_id
             try:
                 query_id = ObjectId(document_id)
             except Exception:
                 query_id = document_id
             
-            # ใช้ $set เพื่ออัปเดตเฉพาะ field
+            # Use $set to update single field
             result = collection.update_one(
                 {"_id": query_id},
                 {"$set": {field_key: field_value}}
@@ -329,49 +323,47 @@ class MongoDBClient:
             self.disconnect()
             
             if result.matched_count == 0:
-                return {'success': False, 'message': 'ไม่พบเอกสารนี้ในการอัปเดต'}
+                return {'success': False, 'message': 'Document not found for update'}
                 
-            return {'success': True, 'message': f'อัปเดต field "{field_key}" สำเร็จ'}
+            return {'success': True, 'message': f'Field "{field_key}" updated successfully'}
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
 
     def clear_collection(self, database_name: str, collection_name: str, confirm_collection_name: str) -> Dict:
-        """ล้างข้อมูลใน collection"""
+        """Clear all data in collection"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
-            # ตรวจสอบว่าชื่อ collection ที่ยืนยันถูกต้องหรือไม่
             if collection_name != confirm_collection_name:
                 self.disconnect()
-                return {'success': False, 'message': f'ชื่อ collection ไม่ถูกต้อง กรุณากรอก "{collection_name}" ให้ถูกต้อง'}
+                return {'success': False, 'message': f'Collection name incorrect. Please enter "{collection_name}" exactly'}
             
             db = self.client[database_name]
             collection = db[collection_name]
             
-            # ล้างข้อมูลทั้งหมดใน collection
             result = collection.delete_many({})
             
             self.disconnect()
             return {
                 'success': True, 
-                'message': f'ล้างข้อมูลใน collection "{collection_name}" สำเร็จ (ลบ {result.deleted_count} เอกสาร)'
+                'message': f'Cleared collection "{collection_name}" ({result.deleted_count} documents deleted)'
             }
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def drop_collections(self, database_name: str, collection_names: List[str]) -> Dict:
-        """ลบ collections ที่เลือก (drop)"""
+        """Drop selected collections"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             if not collection_names:
-                return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการลบ'}
+                return {'success': False, 'message': 'No collections selected for delete'}
             
             db = self.client[database_name]
             dropped = []
@@ -389,33 +381,32 @@ class MongoDBClient:
             if errors:
                 return {
                     'success': len(dropped) > 0,
-                    'message': f'ลบสำเร็จ {len(dropped)} collections, ล้มเหลว {len(errors)} collections\n' + '\n'.join(errors),
+                    'message': f'Deleted {len(dropped)} collections, failed {len(errors)} collections\n' + '\n'.join(errors),
                     'dropped': dropped
                 }
             
             return {
                 'success': True,
-                'message': f'ลบ {len(dropped)} collections สำเร็จ: {", ".join(dropped)}',
+                'message': f'Deleted {len(dropped)} collections: {", ".join(dropped)}',
                 'dropped': dropped
             }
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def import_collection(self, database_name: str, collection_name: str, documents: list) -> Dict:
-        """นำเข้าข้อมูลจาก JSON เป็น collection ใหม่"""
+        """Import data from JSON into new collection"""
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             if not documents:
-                return {'success': False, 'message': 'ไม่มีข้อมูลในไฟล์ JSON'}
+                return {'success': False, 'message': 'No data in JSON file'}
             
             db = self.client[database_name]
             collection = db[collection_name]
             
-            # ถ้า documents เป็น dict เดี่ยว ให้แปลงเป็น list
             if isinstance(documents, dict):
                 documents = [documents]
             
@@ -425,29 +416,29 @@ class MongoDBClient:
             
             return {
                 'success': True,
-                'message': f'นำเข้าข้อมูลสำเร็จ {len(result.inserted_ids)} รายการ ไปยัง collection "{collection_name}"',
+                'message': f'Imported {len(result.inserted_ids)} items into collection "{collection_name}"',
                 'count': len(result.inserted_ids)
             }
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}
 
     def export_collections(self, database_name: str, collection_names: List[str], export_dir: str) -> Dict:
-        """ส่งออก collections เป็นไฟล์ JSON"""
+        """Export collections to JSON files"""
         from bson import json_util
         import json
         import os
         
         try:
             if not self.connect():
-                return {'success': False, 'message': 'ไม่สามารถเชื่อมต่อได้'}
+                return {'success': False, 'message': 'Could not connect'}
             
             if not collection_names:
-                return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการส่งออก'}
+                return {'success': False, 'message': 'No collections selected for export'}
                 
             if not os.path.exists(export_dir):
-                return {'success': False, 'message': f'ไม่พบโฟลเดอร์ปลายทาง: {export_dir}'}
+                return {'success': False, 'message': f'Destination folder not found: {export_dir}'}
             
             db = self.client[database_name]
             results = []
@@ -456,19 +447,16 @@ class MongoDBClient:
             for name in collection_names:
                 try:
                     collection = db[name]
-                    # ดึงข้อมูลทั้งหมด
                     documents = list(collection.find())
                     
                     if not documents:
-                        errors.append(f'{name}: ไม่มีข้อมูลใน collection')
+                        errors.append(f'{name}: No data in collection')
                         continue
                         
-                    # สร้าง path ไฟล์
                     file_path = os.path.join(export_dir, f"{name}.json")
                     
-                    # บันทึกเป็น JSON format (array) พร้อม format ที่สวยงาม
                     with open(file_path, 'w', encoding='utf-8') as f:
-                        # ใช้ json_util.dumps เพื่อจัดการโครงสร้างแบบ BSON (เช่น ObjectId, datetime) ให้เป็น JSON มาตรฐาน
+                        # Use json_util.dumps for BSON types (ObjectId, datetime)
                         json_str = json_util.dumps(documents, indent=4, ensure_ascii=False)
                         f.write(json_str)
                         
@@ -481,16 +469,16 @@ class MongoDBClient:
             if errors:
                 return {
                     'success': len(results) > 0,
-                    'message': f'ส่งออกสำเร็จ {len(results)} collections, ล้มเหลว {len(errors)} collections\n' + '\n'.join(errors),
+                    'message': f'Exported {len(results)} collections, failed {len(errors)} collections\n' + '\n'.join(errors),
                     'results': results
                 }
             
             return {
                 'success': True,
-                'message': f'ส่งออก {len(results)} collectionsสำเร็จไปยัง:\n{export_dir}',
+                'message': f'Exported {len(results)} collections to:\n{export_dir}',
                 'results': results
             }
             
         except Exception as e:
             self.disconnect()
-            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+            return {'success': False, 'message': f'Error: {str(e)}'}

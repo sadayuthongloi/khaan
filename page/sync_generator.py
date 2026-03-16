@@ -33,7 +33,7 @@ for i, line in enumerate(generator_lines):
 if start_idx != -1 and end_idx != -1:
     new_method = [
         '    def _get_main_html_content(self) -> str:\n',
-        '        """สร้างเนื้อหา main.html"""\n',
+        '        """Build main.html content"""\n',
         '        return """' + html_content + '"""\n'
     ]
     

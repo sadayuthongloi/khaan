@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -18,11 +18,10 @@
         })();
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
         /* P2 · Main Shell */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Sarabun', sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background: #f9fafb;
             height: 100vh;
             overflow: hidden;
@@ -253,20 +252,20 @@
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 font-mono leading-tight" id="connection-details">—</p>
                 </div>
                 <div class="flex items-center gap-1">
-                    <button type="button" id="theme-toggle" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition p-1.5" title="สลับโหมด Dark/Light">
+                    <button type="button" id="theme-toggle" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition p-1.5" title="Toggle Dark/Light">
                         <i class="fas fa-moon dark:hidden"></i>
                         <i class="fas fa-sun hidden dark:inline-block"></i>
                     </button>
-                    <button type="button" class="text-gray-400 hover:text-red-500 transition p-1" onclick="goBack()" title="กลับ"><i class="fas fa-sign-out-alt"></i></button>
+                    <button type="button" class="text-gray-400 hover:text-red-500 transition p-1" onclick="goBack()" title="Back"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
             <div class="p-4 bg-gray-50/50 dark:bg-gray-700/30">
-                <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">ฐานข้อมูล</span>
+                <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Database</span>
             </div>
             <nav class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1 min-h-0" id="databases-container">
                 <div class="loading py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
                     <div class="spinner"></div>
-                    กำลังโหลดฐานข้อมูล...
+                    Loading databases...
                 </div>
             </nav>
         </aside>
@@ -276,13 +275,13 @@
             <div class="data-section">
                 <div class="data-header">
                     <div>
-                        <div class="data-title" id="data-title">เลือกฐานข้อมูลและ Collection เพื่อดูข้อมูล</div>
+                        <div class="data-title" id="data-title">Select database and collection to view data</div>
                         <div class="data-stats" id="data-stats"></div>
                     </div>
                     <div class="data-header-right flex items-center gap-3">
                         <div id="data-header-actions" class="flex items-center gap-3"></div>
                         <button type="button" class="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-sm font-semibold transition" id="delete-btn" onclick="window._showDeleteModal && window._showDeleteModal()" style="display: none;">
-                            <i class="fas fa-trash-alt"></i> ล้างข้อมูล
+                            <i class="fas fa-trash-alt"></i> Clear data
                         </button>
                     </div>
                 </div>
@@ -294,8 +293,8 @@
                             <div class="w-20 h-20 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-100 dark:border-gray-600">
                                 <i class="fas fa-table-list text-gray-300 dark:text-gray-500 text-3xl"></i>
                             </div>
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">เลือกฐานข้อมูลและ Collection เพื่อดูข้อมูล</h3>
-                            <p class="text-gray-400 dark:text-gray-500 text-sm leading-relaxed">คลิกเลือกฐานข้อมูลจากรายการด้านซ้าย จากนั้นเลือก collection เพื่อเรียกดู ตรวจสอบ และแก้ไขข้อมูล</p>
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">Select database and collection to view data</h3>
+                            <p class="text-gray-400 dark:text-gray-500 text-sm leading-relaxed">Click a database from the list on the left, then select a collection to view, inspect, and edit data</p>
                         </div>
                     </div>
                 </div>
@@ -307,19 +306,19 @@
     <div class="delete-modal" id="delete-modal" style="display: none;">
         <div class="delete-modal-content">
             <div class="delete-modal-header">
-                <div class="delete-modal-title">⚠️ ยืนยันการล้างข้อมูล</div>
+                <div class="delete-modal-title">⚠️ Confirm clear data</div>
                 <div class="delete-modal-message">
-                    คุณกำลังจะล้างข้อมูลทั้งหมดใน collection <strong id="modal-collection-name"></strong><br>
-                    การดำเนินการนี้ไม่สามารถยกเลิกได้ กรุณายืนยันชื่อ collection เพื่อดำเนินการต่อ
+                    You are about to clear all data in collection <strong id="modal-collection-name"></strong><br>
+                    This action cannot be undone. Please confirm the collection name to proceed.
                 </div>
             </div>
             <div class="delete-modal-form">
-                <label for="confirm-collection-name">กรอกชื่อ collection เพื่อยืนยัน:</label>
-                <input type="text" id="confirm-collection-name" placeholder="กรอกชื่อ collection ที่ต้องการล้างข้อมูล">
+                <label for="confirm-collection-name">Enter collection name to confirm:</label>
+                <input type="text" id="confirm-collection-name" placeholder="Enter the collection name to clear">
             </div>
             <div class="delete-modal-actions">
-                <button class="btn btn-warning" onclick="window._confirmDelete && window._confirmDelete()">🗑️ ล้างข้อมูล</button>
-                <button class="btn btn-secondary" onclick="window._hideDeleteModal && window._hideDeleteModal()">❌ ยกเลิก</button>
+                <button class="btn btn-warning" onclick="window._confirmDelete && window._confirmDelete()">🗑️ Clear data</button>
+                <button class="btn btn-secondary" onclick="window._hideDeleteModal && window._hideDeleteModal()">❌ Cancel</button>
             </div>
         </div>
     </div>
@@ -328,11 +327,11 @@
     <div class="generic-modal" id="alert-modal">
         <div class="generic-modal-content">
             <div class="generic-modal-header">
-                <div class="generic-modal-title" id="alert-modal-title">แจ้งเตือน</div>
+                <div class="generic-modal-title" id="alert-modal-title">Notice</div>
             </div>
             <div class="generic-modal-message" id="alert-modal-message"></div>
             <div class="generic-modal-actions">
-                <button class="btn btn-primary" id="alert-modal-ok">ตกลง</button>
+                <button class="btn btn-primary" id="alert-modal-ok">OK</button>
             </div>
         </div>
     </div>
@@ -341,12 +340,12 @@
     <div class="generic-modal" id="confirm-modal">
         <div class="generic-modal-content">
             <div class="generic-modal-header">
-                <div class="generic-modal-title warning" id="confirm-modal-title">ยืนยันการดำเนินการ</div>
+                <div class="generic-modal-title warning" id="confirm-modal-title">Confirm action</div>
             </div>
             <div class="generic-modal-message" id="confirm-modal-message"></div>
             <div class="generic-modal-actions">
-                <button class="btn btn-danger" id="confirm-modal-yes">ยืนยัน</button>
-                <button class="btn btn-secondary" id="confirm-modal-no">ยกเลิก</button>
+                <button class="btn btn-danger" id="confirm-modal-yes">Confirm</button>
+                <button class="btn btn-secondary" id="confirm-modal-no">Cancel</button>
             </div>
         </div>
     </div>
@@ -380,7 +379,7 @@
             const actions = document.getElementById('data-header-actions');
             if (actions) actions.innerHTML = '';
             const container = document.getElementById('view-container');
-            container.innerHTML = '<div class="data-content"><div class="loading"><div class="spinner"></div>กำลังโหลด...</div></div>';
+            container.innerHTML = '<div class="data-content"><div class="loading"><div class="spinner"></div>Loading...</div></div>';
 
             // Update page badge
             const badge = document.getElementById('page-id-badge');
@@ -393,10 +392,10 @@
 
             try {
                 const response = await fetch(`views/${view}.html?v=${Date.now()}`);
-                if (!response.ok) throw new Error('ไม่พบ view: ' + view);
+                if (!response.ok) throw new Error('View not found: ' + view);
                 const html = await response.text();
 
-                // แยก <style>/<script> ออกจาก HTML
+                // Extract <style>/<script> from HTML
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
@@ -428,7 +427,7 @@
                     }
                 }
             } catch (e) {
-                container.innerHTML = `<div class="data-content"><div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลด view: ${e.message}</div></div>`;
+                container.innerHTML = `<div class="data-content"><div class="alert alert-danger">Error loading view: ${e.message}</div></div>`;
                 console.error(e);
             }
         };
@@ -446,14 +445,14 @@
                 }
             } catch (e) {
                 document.getElementById('databases-container').innerHTML =
-                    `<div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล: ${e}</div>`;
+                    `<div class="alert alert-danger">Error loading databases: ${e}</div>`;
             }
         }
 
         function displayDatabases(databases) {
             const container = document.getElementById('databases-container');
             if (databases.length === 0) {
-                container.innerHTML = '<div class="no-data text-sm text-gray-500 dark:text-gray-400 py-4">ไม่พบฐานข้อมูล</div>';
+                container.innerHTML = '<div class="no-data text-sm text-gray-500 dark:text-gray-400 py-4">No databases found</div>';
                 return;
             }
             container.innerHTML = databases.map(db => `
@@ -472,7 +471,7 @@
             document.querySelectorAll('.db-item-btn').forEach(i => i.classList.remove('active'));
             if (el) el.classList.add('active');
 
-            document.getElementById('data-title').textContent = `ฐานข้อมูล: ${dbName}`;
+            document.getElementById('data-title').textContent = `Database: ${dbName}`;
             document.getElementById('data-stats').textContent = '';
             document.getElementById('delete-btn').style.display = 'none';
 
@@ -486,7 +485,7 @@
         };
 
         // ========== Shared: Alert & Confirm ==========
-        window.showAlert = function (message, title = 'แจ้งเตือน', type = 'info') {
+        window.showAlert = function (message, title = 'Notice', type = 'info') {
             const modal = document.getElementById('alert-modal');
             document.getElementById('alert-modal-title').textContent = title;
             document.getElementById('alert-modal-title').className = 'generic-modal-title ' + type;
@@ -499,7 +498,7 @@
             });
         };
 
-        window.showConfirm = function (message, title = 'ยืนยันการดำเนินการ') {
+        window.showConfirm = function (message, title = 'Confirm action') {
             const modal = document.getElementById('confirm-modal');
             document.getElementById('confirm-modal-title').textContent = title;
             document.getElementById('confirm-modal-message').textContent = message;

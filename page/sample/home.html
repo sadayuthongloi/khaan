@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -8,10 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-
         body {
-            font-family: 'Sarabun', sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
         }
     </style>
 </head>
@@ -26,13 +24,13 @@
         </div>
         <nav class="flex-1 px-4 space-y-2">
             <a href="#" class="flex items-center gap-3 p-3 bg-blue-50 text-blue-600 rounded-lg font-medium">
-                <i class="fas fa-plug w-5"></i> การเชื่อมต่อ
+                <i class="fas fa-plug w-5"></i> Connections
             </a>
             <a href="#" class="flex items-center gap-3 p-3 text-gray-500 hover:bg-gray-100 rounded-lg transition">
-                <i class="fas fa-cog w-5"></i> ตั้งค่า
+                <i class="fas fa-cog w-5"></i> Settings
             </a>
             <a href="#" class="flex items-center gap-3 p-3 text-gray-500 hover:bg-gray-100 rounded-lg transition">
-                <i class="fas fa-history w-5"></i> ประวัติการใช้งาน
+                <i class="fas fa-history w-5"></i> History
             </a>
         </nav>
     </aside>
@@ -41,19 +39,19 @@
         <header class="bg-white border-b border-gray-200 p-4 flex justify-between items-center shadow-sm">
             <div class="relative w-96">
                 <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                <input type="text" placeholder="ค้นหาการเชื่อมต่อ..."
+                <input type="text" placeholder="Search connections..."
                     class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <button
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-medium transition flex items-center gap-2">
-                <i class="fas fa-plus"></i> สร้างการเชื่อมต่อใหม่
+                <i class="fas fa-plus"></i> New connection
             </button>
         </header>
 
         <div class="p-8 overflow-y-auto">
             <div class="mb-6">
-                <h2 class="text-2xl font-semibold text-gray-800">การเชื่อมต่อที่มีอยู่</h2>
-                <p class="text-gray-500 text-sm">จัดการและทดสอบสถานะ Database ของคุณ</p>
+                <h2 class="text-2xl font-semibold text-gray-800">Existing connections</h2>
+                <p class="text-gray-500 text-sm">Manage and test your database connections</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -73,9 +71,9 @@
                     </div>
                     <div class="flex gap-2">
                         <button
-                            class="flex-1 py-2 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">ทดสอบ</button>
+                            class="flex-1 py-2 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">Test</button>
                         <button
-                            class="flex-1 py-2 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">เข้าใช้งาน</button>
+                            class="flex-1 py-2 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Use</button>
                         <button
                             class="px-3 py-2 text-xs text-red-500 border border-red-50 text-red-100 rounded-lg hover:bg-red-50 transition"><i
                                 class="fas fa-trash"></i></button>
@@ -97,9 +95,9 @@
                     </div>
                     <div class="flex gap-2">
                         <button
-                            class="flex-1 py-2 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">ทดสอบ</button>
+                            class="flex-1 py-2 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">Test</button>
                         <button
-                            class="flex-1 py-2 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">เข้าใช้งาน</button>
+                            class="flex-1 py-2 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Use</button>
                         <button
                             class="px-3 py-2 text-xs text-red-500 border border-red-50 rounded-lg hover:bg-red-50 transition"><i
                                 class="fas fa-trash"></i></button>

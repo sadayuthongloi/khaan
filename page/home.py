@@ -2,78 +2,74 @@ import eel
 from database_manager import MongoDBConnectionManager, MongoDBClient
 
 
-# ตั้งค่า Eel
+# Configure Eel
 eel.init('html')
 
-# สร้าง instance ของ managers
+# Create manager instances
 connection_manager = MongoDBConnectionManager()
 
 
-# Eel functions สำหรับ JavaScript
+# Eel functions for JavaScript
 @eel.expose
 def get_connections():
-    """ส่งข้อมูล connections ทั้งหมดไปยัง JavaScript"""
+    """Return all connections to JavaScript"""
     return connection_manager.connections
 
 
 @eel.expose
 def add_new_connection(name: str, host: str, port: int, 
                       username: str = "", password: str = ""):
-    """เพิ่ม connection ใหม่จาก JavaScript"""
+    """Add new connection from JavaScript"""
     success = connection_manager.add_connection(name, host, port, username, password)
     return {
         'success': success,
-        'message': 'เพิ่ม connection สำเร็จ' if success else 'เกิดข้อผิดพลาดในการเพิ่ม connection'
+        'message': 'Connection added successfully' if success else 'Error adding connection'
     }
 
 
 @eel.expose
 def delete_connection(name: str):
-    """ลบ connection จาก JavaScript"""
+    """Delete connection from JavaScript"""
     success = connection_manager.remove_connection(name)
     return {
         'success': success,
-        'message': 'ลบ connection สำเร็จ' if success else 'เกิดข้อผิดพลาดในการลบ connection'
+        'message': 'Connection deleted successfully' if success else 'Error deleting connection'
     }
 
 
 @eel.expose
 def test_connection(name: str):
-    """ทดสอบการเชื่อมต่อ MongoDB"""
+    """Test MongoDB connection"""
     try:
-        # หา connection ตามชื่อ
         connection = connection_manager.get_connection(name)
         
         if not connection:
-            return {'success': False, 'message': '❌ ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': '❌ Connection not found'}
         
-        # ทดสอบการเชื่อมต่อ
         client = MongoDBClient(connection)
         result = client.test_connection()
         
         if result['success']:
             return {
                 'success': True, 
-                'message': f'✅ เชื่อมต่อ {name} สำเร็จ\n📍 {connection["host"]}:{connection["port"]}\n🗄️ ฐานข้อมูล: {connection["database"]}'
+                'message': f'✅ Connected to {name}\n📍 {connection["host"]}:{connection["port"]}\n🗄️ Database: {connection["database"]}'
             }
         else:
-            return {'success': False, 'message': f'❌ การเชื่อมต่อล้มเหลว\n📍 {connection["host"]}:{connection["port"]}\n🔍 ข้อผิดพลาด: {result["message"]}'}
+            return {'success': False, 'message': f'❌ Connection failed\n📍 {connection["host"]}:{connection["port"]}\n🔍 Error: {result["message"]}'}
             
     except Exception as e:
-        return {'success': False, 'message': f'❌ เกิดข้อผิดพลาดในการทดสอบ: {str(e)}'}
+        return {'success': False, 'message': f'❌ Error testing connection: {str(e)}'}
 
 
 @eel.expose
 def use_connection(name: str):
-    """เข้าใช้งาน connection และไปยังหน้า main"""
+    """Use connection and navigate to main page"""
     try:
-        # หา connection ตามชื่อ
         connection = connection_manager.get_connection(name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ทดสอบการเชื่อมต่อก่อน
         client = MongoDBClient(connection)
         result = client.test_connection()
         
@@ -81,172 +77,160 @@ def use_connection(name: str):
             return {
                 'success': True, 
                 'connection': connection,
-                'message': 'เชื่อมต่อสำเร็จ'
+                'message': 'Connected successfully'
             }
         else:
-            return {'success': False, 'message': f'ไม่สามารถเชื่อมต่อได้: {result["message"]}'}
+            return {'success': False, 'message': f'Could not connect: {result["message"]}'}
             
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def get_databases(connection_name: str):
-    """ดึงรายการฐานข้อมูลทั้งหมด"""
+    """Get list of all databases"""
     try:
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ดึงรายการฐานข้อมูล
         client = MongoDBClient(connection)
         return client.list_databases()
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def get_collections(connection_name: str, database_name: str):
-    """ดึงรายการ collections ในฐานข้อมูล"""
+    """Get list of collections in database"""
     try:
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ดึง collections
         client = MongoDBClient(connection)
         return client.get_collections(database_name)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def get_collection_data(connection_name: str, database_name: str, collection_name: str, limit: int = 50, 
                         search_field: str = "", search_operator: str = "", search_value: str = ""):
-    """ดึงข้อมูลใน collection พร้อม search"""
+    """Get collection data with optional search"""
     try:
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ดึงข้อมูล
         client = MongoDBClient(connection)
         return client.get_collection_data(database_name, collection_name, limit, search_field, search_operator, search_value)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 @eel.expose
 def get_document(connection_name: str, database_name: str, collection_name: str, document_id: str):
-    """ดึงข้อมูลเอกสาร 1 รายการตาม _id"""
+    """Get single document by _id"""
     try:
         connection = connection_manager.get_connection(connection_name)
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
             
         client = MongoDBClient(connection)
         return client.get_document(database_name, collection_name, document_id)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 @eel.expose
 def update_document(connection_name: str, database_name: str, collection_name: str, document_id: str, document_json_str: str):
-    """อัปเดตข้อมูลเอกสาร 1 รายการ"""
+    """Update single document"""
     try:
         connection = connection_manager.get_connection(connection_name)
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
             
         client = MongoDBClient(connection)
         return client.update_document(database_name, collection_name, document_id, document_json_str)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def update_document_field(connection_name: str, database_name: str, collection_name: str, document_id: str, field_key: str, field_value_json_str: str):
-    """อัปเดตเฉพาะ field เดียวของเอกสาร"""
+    """Update single field of document"""
     try:
         connection = connection_manager.get_connection(connection_name)
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
             
         client = MongoDBClient(connection)
         return client.update_document_field(database_name, collection_name, document_id, field_key, field_value_json_str)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def get_collection_fields(connection_name: str, database_name: str, collection_name: str):
-    """ดึงรายการ fields ใน collection"""
+    """Get list of fields in collection"""
     try:
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ดึง fields
         client = MongoDBClient(connection)
         return client.get_collection_fields(database_name, collection_name)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 
 
 @eel.expose
 def clear_collection(connection_name: str, database_name: str, collection_name: str, confirm_collection_name: str):
-    """ล้างข้อมูลใน collection"""
+    """Clear all data in collection"""
     try:
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ล้างข้อมูลใน collection
         client = MongoDBClient(connection)
         return client.clear_collection(database_name, collection_name, confirm_collection_name)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def drop_collections(connection_name: str, database_name: str, collection_names: list):
-    """ลบ collections ที่เลือก"""
+    """Drop selected collections"""
     try:
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
-        # ลบ collections
         client = MongoDBClient(connection)
         return client.drop_collections(database_name, collection_names)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 @eel.expose
 def import_collection(connection_name: str, database_name: str):
-    """นำเข้า collection จากไฟล์ JSON (รองรับหลายไฟล์)"""
+    """Import collection(s) from JSON file(s)"""
     import json
     import os
     import tkinter as tk
@@ -254,70 +238,62 @@ def import_collection(connection_name: str, database_name: str):
     from bson import json_util
     
     try:
-        # เปิด file dialog เพื่อเลือกไฟล์ JSON (หลายไฟล์)
         root = tk.Tk()
         root.withdraw()
         root.attributes('-topmost', True)
         
         file_paths = filedialog.askopenfilenames(
-            title='เลือกไฟล์ JSON เพื่อนำเข้า (เลือกได้หลายไฟล์)',
+            title='Select JSON file(s) to import',
             filetypes=[('JSON files', '*.json'), ('All files', '*.*')]
         )
         
         root.destroy()
         
         if not file_paths:
-            return {'success': False, 'message': 'ไม่ได้เลือกไฟล์'}
+            return {'success': False, 'message': 'No file selected'}
         
-        # หา connection
         connection = connection_manager.get_connection(connection_name)
         
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
         
         results = []
         errors = []
         
         for file_path in file_paths:
             try:
-                # อ่านชื่อไฟล์เป็นชื่อ collection
                 collection_name = os.path.splitext(os.path.basename(file_path))[0]
                 
-                # อ่านไฟล์ JSON - รองรับทั้ง JSON array และ JSONL (หนึ่ง JSON ต่อบรรทัด)
                 documents = []
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read().strip()
                     
                     if content.startswith('['):
-                        # JSON array format
                         documents = json_util.loads(content)
                     else:
-                        # JSONL format (one JSON per line)
                         for line in content.split('\n'):
                             line = line.strip()
                             if line:
                                 documents.append(json_util.loads(line))
                 
-                # นำเข้าข้อมูล
                 client = MongoDBClient(connection)
                 result = client.import_collection(database_name, collection_name, documents)
                 
                 if result['success']:
-                    results.append(f'{collection_name}: {result["count"]} รายการ')
+                    results.append(f'{collection_name}: {result["count"]} items')
                 else:
                     errors.append(f'{collection_name}: {result["message"]}')
                     
             except json.JSONDecodeError as e:
-                errors.append(f'{os.path.basename(file_path)}: ไฟล์ JSON ไม่ถูกต้อง')
+                errors.append(f'{os.path.basename(file_path)}: Invalid JSON file')
             except Exception as e:
                 errors.append(f'{os.path.basename(file_path)}: {str(e)}')
         
-        # สร้างข้อความสรุป
         message_parts = []
         if results:
-            message_parts.append(f'นำเข้าสำเร็จ {len(results)} ไฟล์:\n' + '\n'.join(results))
+            message_parts.append(f'Import success {len(results)} file(s):\n' + '\n'.join(results))
         if errors:
-            message_parts.append(f'ล้มเหลว {len(errors)} ไฟล์:\n' + '\n'.join(errors))
+            message_parts.append(f'Failed {len(errors)} file(s):\n' + '\n'.join(errors))
         
         return {
             'success': len(results) > 0,
@@ -327,48 +303,45 @@ def import_collection(connection_name: str, database_name: str):
         }
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 @eel.expose
 def export_collections(connection_name: str, database_name: str, collection_names: list):
-    """ส่งออก collections เป็นไฟล์ JSON"""
+    """Export collections to JSON files"""
     import tkinter as tk
     from tkinter import filedialog
     import os
     
     try:
-        # หา connection ก่อนเพื่อไม่ให้เสียเวลาถ้าไม่มี
         connection = connection_manager.get_connection(connection_name)
         if not connection:
-            return {'success': False, 'message': 'ไม่พบ connection ที่ระบุ'}
+            return {'success': False, 'message': 'Connection not found'}
             
         if not collection_names:
-            return {'success': False, 'message': 'ไม่ได้เลือก collection ที่ต้องการส่งออก'}
+            return {'success': False, 'message': 'No collections selected for export'}
             
-        # เปิด file dialog เพื่อเลือกโฟลเดอร์สำหรับบันทึก
         root = tk.Tk()
         root.withdraw()
         root.attributes('-topmost', True)
         
         export_dir = filedialog.askdirectory(
-            title=f'เลือกโฟลเดอร์สำหรับบันทึก {len(collection_names)} collections'
+            title=f'Select folder to save {len(collection_names)} collections'
         )
         
         root.destroy()
         
         if not export_dir:
-            return {'success': False, 'message': 'ยกเลิกการส่งออก'}
+            return {'success': False, 'message': 'Export cancelled'}
             
-        # เริ่มการส่งออก
         client = MongoDBClient(connection)
         return client.export_collections(database_name, collection_names, export_dir)
         
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 @eel.expose
 def open_mongodb_folder():
-    """เปิดโฟลเดอร์ MongoDB Server ใน Windows Explorer"""
+    """Open MongoDB Server folder in Windows Explorer"""
     import os
     import platform
     import subprocess
@@ -378,25 +351,24 @@ def open_mongodb_folder():
         if platform.system() == "Windows":
             if os.path.exists(path):
                 os.startfile(path)
-                return {'success': True, 'message': 'เปิดโฟลเดอร์สำเร็จ'}
+                return {'success': True, 'message': 'Folder opened successfully'}
             else:
-                return {'success': False, 'message': f'ไม่พบโฟลเดอร์ {path}'}
+                return {'success': False, 'message': f'Folder not found: {path}'}
         else:
-            return {'success': False, 'message': 'ฟีเจอร์นี้รองรับเฉพาะ Windows'}
+            return {'success': False, 'message': 'This feature is only supported on Windows'}
     except Exception as e:
-        return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
+        return {'success': False, 'message': f'Error: {str(e)}'}
 
 
 def main():
-    """ฟังก์ชันหลักสำหรับรันแอปพลิเคชัน"""
-    # เริ่มต้น Eel application (serve ไฟล์จากโฟลเดอร์ html/ โดยตรง)
-    print("กำลังเริ่มต้น MongoDB Connection Manager...")
-    print("เปิดเบราว์เซอร์ที่: http://localhost:8000")
+    """Main entry point for the application"""
+    print("Starting MongoDB Connection Manager...")
+    print("Open browser at: http://localhost:8000")
 
     try:
         eel.start('index.html', size=(1200, 800), port=8000)
     except (SystemExit, MemoryError, KeyboardInterrupt):
-        print("ปิดแอปพลิเคชัน...")
+        print("Closing application...")
 
 
 

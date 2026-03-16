@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
+        body { font-family: system-ui, -apple-system, sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -26,7 +25,7 @@
         </div>
         
         <div class="px-6 py-2">
-            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">ฐานข้อมูล</span>
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Database</span>
         </div>
 
         <nav class="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
@@ -51,9 +50,9 @@
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
                         <i class="fas fa-folder-open text-blue-500"></i>
-                        ฐานข้อมูล: endoindex
+                        Database: endoindex
                     </h2>
-                    <p class="text-gray-400 text-sm mt-1">ทั้งหมด <span class="text-blue-600 font-semibold">76</span> คอลเลกชัน</p>
+                    <p class="text-gray-400 text-sm mt-1">Total <span class="text-blue-600 font-semibold">76</span> collections</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition shadow-sm shadow-emerald-100">
@@ -71,7 +70,7 @@
                 <div class="p-4 border-b border-gray-100 bg-gray-50/30 flex items-center gap-4">
                     <div class="relative flex-1">
                         <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
-                        <input type="text" placeholder="ค้นหารายชื่อคอลเลกชัน..." class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                        <input type="text" placeholder="Search collection names..." class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
                     </div>
                 </div>
 
@@ -82,8 +81,8 @@
                                 <th class="px-6 py-4 font-bold w-12 text-center">
                                     <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 </th>
-                                <th class="px-6 py-4 font-bold">ชื่อ Collection</th>
-                                <th class="px-6 py-4 font-bold text-right">จัดการ</th>
+                                <th class="px-6 py-4 font-bold">Collection name</th>
+                                <th class="px-6 py-4 font-bold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -100,7 +99,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button class="text-xs font-semibold text-blue-600 hover:underline">เปิดดูข้อมูล</button>
+                                    <button class="text-xs font-semibold text-blue-600 hover:underline">View data</button>
                                 </td>
                             </tr>
                             <tr class="hover:bg-blue-50/30 transition group">
@@ -116,7 +115,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button class="text-xs font-semibold text-blue-600 hover:underline">เปิดดูข้อมูล</button>
+                                    <button class="text-xs font-semibold text-blue-600 hover:underline">View data</button>
                                 </td>
                             </tr>
                             </tbody>

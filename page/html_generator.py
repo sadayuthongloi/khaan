@@ -1,13 +1,13 @@
 """
 HTML Generator
-สร้างไฟล์ HTML สำหรับ interface ของแอปพลิเคชัน
+Generate HTML files for the application interface.
 """
 
 import os
 
 
 class HTMLGenerator:
-    """สร้างไฟล์ HTML สำหรับ interface"""
+    """Generate HTML for the interface"""
     
     def __init__(self, html_dir: str = 'html'):
         self.html_dir = html_dir
@@ -15,48 +15,48 @@ class HTMLGenerator:
         self._ensure_html_directory()
     
     def _ensure_html_directory(self):
-        """สร้างโฟลเดอร์ html และ views ถ้ายังไม่มี"""
+        """Create html and views directories if they do not exist"""
         if not os.path.exists(self.html_dir):
             os.makedirs(self.html_dir)
         if not os.path.exists(self.views_dir):
             os.makedirs(self.views_dir)
     
     def generate_index_html(self):
-        """สร้างไฟล์ index.html"""
+        """Generate index.html"""
         html_content = self._get_index_html_content()
         self._write_html_file('index.html', html_content)
     
     def generate_main_html(self):
-        """สร้างไฟล์ main.html"""
+        """Generate main.html"""
         html_content = self._get_main_html_content()
         self._write_html_file('main.html', html_content)
 
     def generate_views(self):
-        """สร้างไฟล์ view แยกใน views/"""
+        """Generate view files in views/"""
         self._write_view_file('collections.html', self._get_collections_view_content())
         self._write_view_file('data.html', self._get_data_view_content())
         self._write_view_file('editor.html', self._get_editor_view_content())
 
     def generate_all(self):
-        """สร้างไฟล์ HTML ทั้งหมด"""
+        """Generate all HTML files"""
         self.generate_index_html()
         self.generate_main_html()
         self.generate_views()
 
     def _write_html_file(self, filename: str, content: str):
-        """เขียนไฟล์ HTML หลัก"""
+        """Write main HTML file"""
         filepath = os.path.join(self.html_dir, filename)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
 
     def _write_view_file(self, filename: str, content: str):
-        """เขียนไฟล์ view ใน views/"""
+        """Write view file in views/"""
         filepath = os.path.join(self.views_dir, filename)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
 
     def _get_collections_view_content(self) -> str:
-        """อ่านเนื้อหา views/collections.html จากไฟล์ (ถ้ามี) หรือ return string เปล่า"""
+        """Read views/collections.html from file if present, else return empty string"""
         path = os.path.join(self.views_dir, 'collections.html')
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
@@ -64,7 +64,7 @@ class HTMLGenerator:
         return '<!-- collections view not found -->'
 
     def _get_data_view_content(self) -> str:
-        """อ่านเนื้อหา views/data.html จากไฟล์ (ถ้ามี)"""
+        """Read views/data.html from file if present"""
         path = os.path.join(self.views_dir, 'data.html')
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
@@ -72,7 +72,7 @@ class HTMLGenerator:
         return '<!-- data view not found -->'
 
     def _get_editor_view_content(self) -> str:
-        """อ่านเนื้อหา views/editor.html จากไฟล์ (ถ้ามี)"""
+        """Read views/editor.html from file if present"""
         path = os.path.join(self.views_dir, 'editor.html')
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
@@ -80,10 +80,10 @@ class HTMLGenerator:
         return '<!-- editor view not found -->'
     
     def _get_index_html_content(self) -> str:
-        """สร้างเนื้อหา index.html"""
+        """Build index.html content"""
         return """
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -355,33 +355,33 @@ class HTMLGenerator:
     <div class="container">
         <div class="header">
             <h1>MongoDB Connection Manager</h1>
-            <p>จัดการการเชื่อมต่อฐานข้อมูล MongoDB ของคุณ</p>
+            <p>Manage your MongoDB database connections</p>
         </div>
         
         <div class="content">
-            <!-- แสดง Connections ที่มีอยู่ -->
+            <!-- Display existing connections -->
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="margin-bottom: 0;">การเชื่อมต่อที่มีอยู่</h2>
-                    <button class="btn btn-secondary" onclick="openMongodbFolder()" style="display: flex; align-items: center; gap: 5px;" title="เปิดโฟลเดอร์ใน Windows Explorer">
+                    <h2 style="margin-bottom: 0;">Existing connections</h2>
+                    <button class="btn btn-secondary" onclick="openMongodbFolder()" style="display: flex; align-items: center; gap: 5px;" title="Open folder in Windows Explorer">
                         📁 C:\Program Files\MongoDB\Server
                     </button>
                 </div>
                 <div id="connections-container" class="connections-grid">
-                    <!-- Connections จะถูกแสดงที่นี่ -->
+                    <!-- Connections will be displayed here -->
                 </div>
                 <button class="btn btn-primary" onclick="showNewConnectionForm()">
-                    + สร้างการเชื่อมต่อใหม่
+                    + New connection
                 </button>
             </div>
             
-            <!-- Form สำหรับสร้าง Connection ใหม่ -->
+            <!-- Form for new connection -->
             <div id="new-connection-form" class="section hidden">
-                <h2>สร้างการเชื่อมต่อใหม่</h2>
+                <h2>New connection</h2>
                 <div id="form-alert"></div>
                 <form id="connection-form">
                     <div class="form-group">
-                        <label for="connection-name">ชื่อการเชื่อมต่อ *</label>
+                        <label for="connection-name">Connection name *</label>
                         <input type="text" id="connection-name" required>
                     </div>
                     
@@ -400,18 +400,18 @@ class HTMLGenerator:
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="connection-username">ชื่อผู้ใช้ (ไม่บังคับ)</label>
+                            <label for="connection-username">Username (optional)</label>
                             <input type="text" id="connection-username">
                         </div>
                         <div class="form-group">
-                            <label for="connection-password">รหัสผ่าน (ไม่บังคับ)</label>
+                            <label for="connection-password">Password (optional)</label>
                             <input type="password" id="connection-password">
                         </div>
                     </div>
                     
                     <div class="connection-actions">
-                        <button type="submit" class="btn btn-success">บันทึกการเชื่อมต่อ</button>
-                        <button type="button" class="btn btn-danger" onclick="hideNewConnectionForm()">ยกเลิก</button>
+                        <button type="submit" class="btn btn-success">Save connection</button>
+                        <button type="button" class="btn btn-danger" onclick="hideNewConnectionForm()">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -420,12 +420,12 @@ class HTMLGenerator:
 
     <script type="text/javascript" src="/eel.js"></script>
     <script>
-        // โหลด connections เมื่อหน้าเว็บโหลดเสร็จ
+        // Load connections when page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadConnections();
         });
         
-        // เปิดโฟลเดอร์ MongoDB 
+        // Open MongoDB folder
         async function openMongodbFolder() {
             try {
                 const result = await eel.open_mongodb_folder()();
@@ -433,27 +433,27 @@ class HTMLGenerator:
                     showAlert(result.message, 'danger');
                 }
             } catch (error) {
-                console.error('เกิดข้อผิดพลาด:', error);
-                showAlert('เกิดข้อผิดพลาดในการเปิดโฟลเดอร์', 'danger');
+                console.error('Error:', error);
+                showAlert('Error opening folder', 'danger');
             }
         }
 
-        // โหลดและแสดง connections
+        // Load and display connections
         async function loadConnections() {
             try {
                 const connections = await eel.get_connections()();
                 displayConnections(connections);
             } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการโหลด connections:', error);
+                console.error('Error loading connections:', error);
             }
         }
         
-        // แสดง connections ในหน้าเว็บ
+        // Display connections on page
         function displayConnections(connections) {
             const container = document.getElementById('connections-container');
             
             if (connections.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666;">ยังไม่มีการเชื่อมต่อใดๆ</p>';
+                container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666;">No connections yet</p>';
                 return;
             }
             
@@ -465,27 +465,27 @@ class HTMLGenerator:
                         ${conn.username ? `<div><strong>Username:</strong> ${conn.username}</div>` : ''}
                     </div>
                     <div class="connection-actions">
-                        <button class="btn btn-success" onclick="testConnection('${conn.name}')">ทดสอบ</button>
-                        <button class="btn btn-primary" onclick="useConnection('${conn.name}')">เข้าใช้งาน</button>
-                        <button class="btn btn-danger" onclick="deleteConnection('${conn.name}')">ลบ</button>
+                        <button class="btn btn-success" onclick="testConnection('${conn.name}')">Test</button>
+                        <button class="btn btn-primary" onclick="useConnection('${conn.name}')">Use</button>
+                        <button class="btn btn-danger" onclick="deleteConnection('${conn.name}')">Delete</button>
                     </div>
                 </div>
             `).join('');
         }
         
-        // แสดง form สำหรับสร้าง connection ใหม่
+        // Show form for new connection
         function showNewConnectionForm() {
             document.getElementById('new-connection-form').classList.remove('hidden');
             document.getElementById('form-alert').innerHTML = '';
         }
         
-        // ซ่อน form สำหรับสร้าง connection ใหม่
+        // Hide form for new connection
         function hideNewConnectionForm() {
             document.getElementById('new-connection-form').classList.add('hidden');
             document.getElementById('connection-form').reset();
         }
         
-        // จัดการการส่ง form
+        // Handle form submit
         document.getElementById('connection-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -513,14 +513,14 @@ class HTMLGenerator:
                     loadConnections();
                 }
             } catch (error) {
-                showAlert('เกิดข้อผิดพลาดในการบันทึก', 'danger');
-                console.error('เกิดข้อผิดพลาด:', error);
+showAlert('Error saving connection', 'danger');
+                    console.error('Error:', error);
             }
         });
         
-        // ลบ connection
+        // Delete connection
         async function deleteConnection(name) {
-            if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบการเชื่อมต่อ "${name}"?`)) {
+            if (!confirm(`Are you sure you want to delete the connection "${name}"?`)) {
                 return;
             }
             
@@ -532,24 +532,24 @@ class HTMLGenerator:
                     loadConnections();
                 }
             } catch (error) {
-                showAlert('เกิดข้อผิดพลาดในการลบ', 'danger');
-                console.error('เกิดข้อผิดพลาด:', error);
+                showAlert('Error deleting connection', 'danger');
+                console.error('Error:', error);
             }
         }
         
-        // ทดสอบ connection
+        // Test connection
         async function testConnection(name) {
             try {
-                // แสดง loading state
+                // Show loading state
                 const button = event.target;
                 const originalText = button.textContent;
-                button.textContent = '🔄 กำลังทดสอบ...';
+                button.textContent = '🔄 Testing...';
                 button.disabled = true;
                 button.classList.add('loading');
                 
                 const result = await eel.test_connection(name)();
                 
-                // คืนค่าเดิมของปุ่ม
+                // Restore button
                 button.textContent = originalText;
                 button.disabled = false;
                 button.classList.remove('loading');
@@ -557,55 +557,55 @@ class HTMLGenerator:
                 // แสดงผลลัพธ์
                 showTestResult(result.message, result.success);
             } catch (error) {
-                // คืนค่าเดิมของปุ่มในกรณีเกิดข้อผิดพลาด
+                // Restore button on error
                 const button = event.target;
-                button.textContent = 'ทดสอบ';
+                button.textContent = 'Test';
                 button.disabled = false;
                 button.classList.remove('loading');
                 
-                showTestResult('❌ เกิดข้อผิดพลาดในการทดสอบ', false);
-                console.error('เกิดข้อผิดพลาด:', error);
+                showTestResult('❌ Error testing connection', false);
+                console.error('Error:', error);
             }
         }
         
-        // ใช้ connection และไปยังหน้า main
+        // Use connection and go to main page
         async function useConnection(name) {
             try {
                 const result = await eel.use_connection(name)();
                 
                 if (result.success) {
-                    // เก็บข้อมูล connection ใน sessionStorage
+                    // Store connection in sessionStorage
                     sessionStorage.setItem('currentConnection', JSON.stringify(result.connection));
                     
-                    // ไปยังหน้า main
+                    // Navigate to main page
                     window.location.href = 'main.html?v=' + new Date().getTime();
                 } else {
                     showAlert(result.message, 'danger');
                 }
             } catch (error) {
-                showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
-                console.error('เกิดข้อผิดพลาด:', error);
+                showAlert('Error connecting', 'danger');
+                console.error('Error:', error);
             }
         }
         
-        // แสดง alert
+        // Show alert
         function showAlert(message, type) {
             const alertDiv = document.getElementById('form-alert');
             alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
             
-            // ลบ alert หลังจาก 5 วินาที
+            // Clear alert after 5 seconds
             setTimeout(() => {
                 alertDiv.innerHTML = '';
             }, 5000);
         }
         
-        // แสดงผลลัพธ์การทดสอบในรูปแบบ modal
+        // Show test result in modal
         function showTestResult(message, isSuccess) {
-            // สร้าง modal element
+            // Create modal element
             const modal = document.createElement('div');
             modal.className = 'test-result-modal';
             
-            // กำหนด icon และสีตามผลลัพธ์
+            // Set icon and color by result
             let icon, colorClass;
             if (isSuccess) {
                 icon = '✅';
@@ -619,21 +619,21 @@ class HTMLGenerator:
                 <div class="test-result-content">
                     <div class="test-result-icon ${colorClass}">${icon}</div>
                     <div class="test-result-message ${colorClass}">${message}</div>
-                    <button class="btn btn-primary" onclick="closeTestResult()">ตกลง</button>
+                    <button class="btn btn-primary" onclick="closeTestResult()">OK</button>
                 </div>
             `;
             
-            // เพิ่ม modal ลงใน body
+            // Append modal to body
             document.body.appendChild(modal);
             
-            // ปิด modal เมื่อคลิกพื้นหลัง
+            // Close modal on backdrop click
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
                     closeTestResult();
                 }
             });
             
-            // ปิด modal เมื่อกด ESC
+            // Close modal on ESC
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeTestResult();
@@ -641,7 +641,7 @@ class HTMLGenerator:
             });
         }
         
-        // ปิด modal ผลลัพธ์การทดสอบ
+        // Close test result modal
         function closeTestResult() {
             const modal = document.querySelector('.test-result-modal');
             if (modal) {
@@ -654,9 +654,9 @@ class HTMLGenerator:
         """
     
     def _get_main_html_content(self) -> str:
-        """สร้างเนื้อหา main.html"""
+        """Build main.html content"""
         return """<!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -1405,22 +1405,22 @@ class HTMLGenerator:
             <h1>MongoDB Manager</h1>
             <div class="connection-info">
                 <div class="connection-details" id="connection-details">
-                    <!-- รายละเอียดการเชื่อมต่อจะแสดงที่นี่ -->
+                    <!-- Connection details will be shown here -->
                 </div>
             </div>
         </div>
-        <button class="btn btn-danger" onclick="goBack()">← กลับ</button>
+        <button class="btn btn-danger" onclick="goBack()">← Back</button>
     </div>
 
     <div class="main-container">
         <div class="sidebar">
             <!-- Databases List -->
             <div class="databases-section">
-                <h3>🗄️ ฐานข้อมูล</h3>
+                <h3>🗄️ Database</h3>
                 <div id="databases-container">
                     <div class="loading">
                         <div class="spinner"></div>
-                        กำลังโหลดฐานข้อมูล...
+                        Loading databases...
                     </div>
                 </div>
             </div>
@@ -1430,13 +1430,13 @@ class HTMLGenerator:
             <div class="data-section">
                 <div class="data-header">
                     <div>
-                        <div class="data-title" id="data-title">เลือกฐานข้อมูลและ Collection เพื่อดูข้อมูล</div>
+                        <div class="data-title" id="data-title">Select database and collection to view data</div>
                         <div class="data-stats" id="data-stats"></div>
                     </div>
                     <div class="data-header-right">
                         <button class="btn btn-danger" id="delete-btn" onclick="showDeleteModal()"
                             style="display: none;">
-                            🗑️ ล้างข้อมูล
+                            🗑️ Clear data
                         </button>
                     </div>
                 </div>
@@ -1445,32 +1445,32 @@ class HTMLGenerator:
                 <div class="search-form" id="search-form" style="display: none;">
                     <div class="search-row">
                         <div class="search-group">
-                            <label for="search-field">ฟิลด์</label>
+                            <label for="search-field">Field</label>
                             <select id="search-field">
-                                <option value="">เลือกฟิลด์</option>
+                                <option value="">Select field</option>
                             </select>
                         </div>
                         <div class="search-group">
-                            <label for="search-operator">เงื่อนไข</label>
+                            <label for="search-operator">Condition</label>
                             <select id="search-operator">
-                                <option value="">เลือกเงื่อนไข</option>
-                                <option value="=">= (เท่ากับ)</option>
-                                <option value="like">like (คล้าย)</option>
+                                <option value="">Select condition</option>
+                                <option value="=">= (Equals)</option>
+                                <option value="like">like (Contains)</option>
                             </select>
                         </div>
                         <div class="search-group">
-                            <label for="search-value">ค่า</label>
-                            <input type="text" id="search-value" placeholder="กรอกค่าที่ต้องการค้นหา">
+                            <label for="search-value">Value</label>
+                            <input type="text" id="search-value" placeholder="Enter search value">
                         </div>
                         <div class="search-actions">
-                            <button class="btn btn-primary" onclick="performSearch()">🔍 ค้นหา</button>
-                            <button class="btn btn-secondary" onclick="clearSearch()">🗑️ ล้างการค้นหา</button>
+                            <button class="btn btn-primary" onclick="performSearch()">🔍 Search</button>
+                            <button class="btn btn-secondary" onclick="clearSearch()">🗑️ Clear search</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="data-content" id="data-content">
-                    <div class="no-data">เลือกฐานข้อมูลจากรายการด้านซ้ายเพื่อเริ่มต้น</div>
+                    <div class="no-data">Select a database from the list on the left to get started</div>
                 </div>
             </div>
 
@@ -1478,13 +1478,13 @@ class HTMLGenerator:
             <div class="editor-section" id="editor-section" style="display: none; height: 100%; flex-direction: column;">
                 <div class="data-header" style="margin-bottom: 10px;">
                     <div>
-                        <div class="data-title" id="editor-title">แก้ไข Document</div>
+                        <div class="data-title" id="editor-title">Edit document</div>
                         <div class="data-stats" id="editor-subtitle"></div>
                     </div>
                     <div class="data-header-right">
                         <button class="btn btn-info" onclick="sortEditorFields()">🔠 A-Z</button>
                         <button class="btn btn-info" onclick="sortEditorFieldsZA()" style="margin-left: 5px;">🔡 Z-A</button>
-                        <button class="btn btn-secondary" onclick="closeEditor()">❌ ปิด</button>
+                        <button class="btn btn-secondary" onclick="closeEditor()">❌ Close</button>
                     </div>
                 </div>
                 <div class="editor-fields-container" id="editor-fields-container">
@@ -1498,19 +1498,19 @@ class HTMLGenerator:
     <div class="delete-modal" id="delete-modal" style="display: none;">
         <div class="delete-modal-content">
             <div class="delete-modal-header">
-                <div class="delete-modal-title">⚠️ ยืนยันการล้างข้อมูล</div>
+                <div class="delete-modal-title">⚠️ Confirm clear data</div>
                 <div class="delete-modal-message">
-                    คุณกำลังจะล้างข้อมูลทั้งหมดใน collection <strong id="modal-collection-name"></strong><br>
-                    การดำเนินการนี้ไม่สามารถยกเลิกได้ กรุณายืนยันชื่อ collection เพื่อดำเนินการต่อ
+                    You are about to clear all data in collection <strong id="modal-collection-name"></strong><br>
+                    This action cannot be undone. Please confirm the collection name to proceed.
                 </div>
             </div>
             <div class="delete-modal-form">
-                <label for="confirm-collection-name">กรอกชื่อ collection เพื่อยืนยัน:</label>
-                <input type="text" id="confirm-collection-name" placeholder="กรอกชื่อ collection ที่ต้องการล้างข้อมูล">
+                <label for="confirm-collection-name">Enter collection name to confirm:</label>
+                <input type="text" id="confirm-collection-name" placeholder="Enter the collection name to clear">
             </div>
             <div class="delete-modal-actions">
-                <button class="btn btn-warning" onclick="confirmDelete()">🗑️ ล้างข้อมูล</button>
-                <button class="btn btn-secondary" onclick="hideDeleteModal()">❌ ยกเลิก</button>
+                <button class="btn btn-warning" onclick="confirmDelete()">🗑️ Clear data</button>
+                <button class="btn btn-secondary" onclick="hideDeleteModal()">❌ Cancel</button>
             </div>
         </div>
     </div>
@@ -1519,11 +1519,11 @@ class HTMLGenerator:
     <div class="generic-modal" id="alert-modal">
         <div class="generic-modal-content">
             <div class="generic-modal-header">
-                <div class="generic-modal-title" id="alert-modal-title">แจ้งเตือน</div>
+                <div class="generic-modal-title" id="alert-modal-title">Notice</div>
             </div>
             <div class="generic-modal-message" id="alert-modal-message"></div>
             <div class="generic-modal-actions">
-                <button class="btn btn-primary" id="alert-modal-ok">ตกลง</button>
+                <button class="btn btn-primary" id="alert-modal-ok">OK</button>
             </div>
         </div>
     </div>
@@ -1532,12 +1532,12 @@ class HTMLGenerator:
     <div class="generic-modal" id="confirm-modal">
         <div class="generic-modal-content">
             <div class="generic-modal-header">
-                <div class="generic-modal-title warning" id="confirm-modal-title">ยืนยันการดำเนินการ</div>
+                <div class="generic-modal-title warning" id="confirm-modal-title">Confirm action</div>
             </div>
             <div class="generic-modal-message" id="confirm-modal-message"></div>
             <div class="generic-modal-actions">
-                <button class="btn btn-danger" id="confirm-modal-yes">ยืนยัน</button>
-                <button class="btn btn-secondary" id="confirm-modal-no">ยกเลิก</button>
+                <button class="btn btn-danger" id="confirm-modal-yes">Confirm</button>
+                <button class="btn btn-secondary" id="confirm-modal-no">Cancel</button>
             </div>
         </div>
     </div>
@@ -1551,32 +1551,32 @@ class HTMLGenerator:
         let currentEditingDocumentId = null;
         let currentDocumentData = null;
 
-        // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
+        // Load data when page is ready
         document.addEventListener('DOMContentLoaded', function () {
             loadConnectionInfo();
         });
 
-        // โหลดข้อมูลการเชื่อมต่อ
+        // Load connection info
         function loadConnectionInfo() {
             const connectionData = sessionStorage.getItem('currentConnection');
             if (connectionData) {
                 currentConnection = JSON.parse(connectionData);
 
-                // แสดงรายละเอียดการเชื่อมต่อ
+                // Show connection details
                 document.getElementById('connection-details').innerHTML = `
                     <strong>${currentConnection.name}</strong><br>
                     ${currentConnection.host}:${currentConnection.port}
                 `;
 
-                // โหลดรายการฐานข้อมูลหลังจาก currentConnection ถูกเซ็ตแล้ว
+                // Load databases after currentConnection is set
                 loadDatabases();
             } else {
-                // ถ้าไม่มีข้อมูลการเชื่อมต่อ ให้กลับไปหน้าแรก
+                // If no connection data, go back to home
                 goBack();
             }
         }
 
-        // โหลดรายการฐานข้อมูล
+        // Load database list
         async function loadDatabases() {
             if (!currentConnection) return;
 
@@ -1586,7 +1586,7 @@ class HTMLGenerator:
                 if (result.success) {
                     displayDatabases(result.databases);
                     
-                    // ปิดหน้า Edit 
+                    // Hide editor section
                     document.getElementById('editor-section').style.display = 'none';
                     document.querySelector('.data-section').style.display = 'block';
                 } else {
@@ -1596,18 +1596,18 @@ class HTMLGenerator:
                 }
             } catch (error) {
                 document.getElementById('databases-container').innerHTML = `
-                    <div class="alert alert-danger">เกิดข้อผิดพลาดในการโหลดฐานข้อมูล: ${error}</div>
+                    <div class="alert alert-danger">Error loading databases: ${error}</div>
                 `;
-                console.error('เกิดข้อผิดพลาด:', error);
+                console.error('Error:', error);
             }
         }
 
-        // แสดงรายการฐานข้อมูล
+        // Display database list
         function displayDatabases(databases) {
             const container = document.getElementById('databases-container');
 
             if (databases.length === 0) {
-                container.innerHTML = '<div class="no-data">ไม่พบฐานข้อมูล</div>';
+                container.innerHTML = '<div class="no-data">No databases found</div>';
                 return;
             }
 
@@ -1618,7 +1618,7 @@ class HTMLGenerator:
             `).join('');
         }
 
-        // เลือกฐานข้อมูล
+        // Select database
         async function selectDatabase(databaseName) {
             currentDatabase = databaseName;
             currentCollection = null;
@@ -1629,8 +1629,8 @@ class HTMLGenerator:
             });
             event.currentTarget.classList.add('active');
 
-            // รีเซ็ต data section
-            document.getElementById('data-title').textContent = `ฐานข้อมูล: ${databaseName}`;
+            // Reset data section
+            document.getElementById('data-title').textContent = `Database: ${databaseName}`;
             document.getElementById('data-stats').textContent = '';
             document.getElementById('search-form').style.display = 'none';
             document.getElementById('delete-btn').style.display = 'none';
@@ -2115,7 +2115,7 @@ class HTMLGenerator:
         // เติมข้อมูล fields ใน dropdown
         function populateSearchFields(fields) {
             const fieldSelect = document.getElementById('search-field');
-            fieldSelect.innerHTML = '<option value="">เลือกฟิลด์</option>';
+            fieldSelect.innerHTML = '<option value="">Select field</option>';
 
             fields.forEach(field => {
                 const option = document.createElement('option');
@@ -2309,7 +2309,7 @@ class HTMLGenerator:
             }
         }
 
-        // ปิด modal เมื่อคลิกพื้นหลัง
+        // Close modal on backdrop click
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('delete-modal').addEventListener('click', function (e) {
                 if (e.target === this) {
