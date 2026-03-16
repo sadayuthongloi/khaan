@@ -3,39 +3,41 @@
 
 <style>
     .data-table-row:hover { background-color: #f1f5f9; }
+    html.dark .data-table-row:hover { background-color: #374151; }
     .data-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
     .data-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    html.dark .data-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; }
 </style>
 
 <!-- Search Toolbar (P2-B sample style) -->
-<div class="bg-white border-b border-gray-200 p-4 shadow-sm" id="search-form" style="display: none;">
+<div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 shadow-sm" id="search-form" style="display: none;">
     <div class="flex flex-wrap items-end gap-4">
         <div class="flex-1 min-w-[150px]">
-            <label for="search-field" class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">ฟิลด์</label>
-            <select id="search-field" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <label for="search-field" class="block text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">ฟิลด์</label>
+            <select id="search-field" class="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm dark:text-gray-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
                 <option value="">เลือกฟิลด์</option>
             </select>
         </div>
         <div class="flex-1 min-w-[150px]">
-            <label for="search-operator" class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">เงื่อนไข</label>
-            <select id="search-operator" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <label for="search-operator" class="block text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">เงื่อนไข</label>
+            <select id="search-operator" class="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm dark:text-gray-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
                 <option value="">เลือกเงื่อนไข</option>
                 <option value="=">เท่ากับ (=)</option>
                 <option value="like">ประกอบด้วย (Like)</option>
             </select>
         </div>
         <div class="flex-[2] min-w-[200px]">
-            <label for="search-value" class="block text-[11px] font-bold text-gray-400 uppercase mb-1 ml-1">ค่าที่ต้องการค้นหา</label>
-            <input type="text" id="search-value" placeholder="กรอกคำค้นหา..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <label for="search-value" class="block text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">ค่าที่ต้องการค้นหา</label>
+            <input type="text" id="search-value" placeholder="กรอกคำค้นหา..." class="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm dark:text-gray-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
         </div>
         <div class="flex gap-2">
             <button type="button" class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm" onclick="performSearch()">
                 <i class="fas fa-search"></i> ค้นหา
             </button>
-            <button type="button" class="px-5 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-200 transition" onclick="clearSearch()" title="ล้างการค้นหา">
+            <button type="button" class="px-5 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition" onclick="clearSearch()" title="ล้างการค้นหา">
                 <i class="fas fa-redo-alt"></i>
             </button>
-            <button type="button" id="sort-btn" class="px-5 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition flex items-center gap-2" onclick="toggleSort()" title="เรียงใหม่สุด → เก่าสุด">
+            <button type="button" id="sort-btn" class="px-5 py-2 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2" onclick="toggleSort()" title="เรียงใหม่สุด → เก่าสุด">
                 <i class="fas fa-sort-amount-down"></i> Z → A
             </button>
         </div>
@@ -47,7 +49,7 @@
     <div class="loading flex items-center justify-center flex-1">
         <div class="text-center">
             <div class="spinner"></div>
-            <p class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</p>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
 </div>
@@ -80,13 +82,13 @@
     function setHeaderTitle(db, collection) {
         const el = document.getElementById('data-title');
         if (!el) return;
-        el.innerHTML = '<div class="flex items-center gap-2 text-sm"><span class="text-gray-400">' + escapeHtml(db) + '</span><i class="fas fa-chevron-right text-[10px] text-gray-300"></i><span class="font-bold text-slate-800 text-lg">' + escapeHtml(collection) + '</span></div>';
+        el.innerHTML = '<div class="flex items-center gap-2 text-sm"><span class="text-gray-400 dark:text-gray-500">' + escapeHtml(db) + '</span><i class="fas fa-chevron-right text-[10px] text-gray-300 dark:text-gray-500"></i><span class="font-bold text-slate-800 dark:text-gray-100 text-lg">' + escapeHtml(collection) + '</span></div>';
     }
 
     function setHeaderStats(count) {
         const el = document.getElementById('data-stats');
         if (!el) return;
-        el.innerHTML = '<span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[11px]">' + escapeHtml(String(count)) + ' เอกสาร</span>';
+        el.innerHTML = '<span class="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded text-[11px]">' + escapeHtml(String(count)) + ' เอกสาร</span>';
     }
 
     async function init() {
@@ -105,7 +107,7 @@
             <div class="loading flex items-center justify-center flex-1">
                 <div class="text-center">
                     <div class="spinner"></div>
-                    <p class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</p>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">กำลังโหลดข้อมูล...</p>
                 </div>
             </div>
         `;
@@ -127,19 +129,19 @@
     }
 
     function formatValue(value, fieldName) {
-        if (value === null || value === undefined) return '<span class="text-xs italic text-gray-300">null</span>';
-        if (Array.isArray(value)) return '<span class="text-xs italic text-gray-400">[array]</span>';
-        if (typeof value === 'object') return '<span class="text-xs italic text-gray-400">[object]</span>';
+        if (value === null || value === undefined) return '<span class="text-xs italic text-gray-300 dark:text-gray-500">null</span>';
+        if (Array.isArray(value)) return '<span class="text-xs italic text-gray-400 dark:text-gray-500">[array]</span>';
+        if (typeof value === 'object') return '<span class="text-xs italic text-gray-400 dark:text-gray-500">[object]</span>';
         const str = String(value);
         const escaped = escapeHtml(str.length > 100 ? str.substring(0, 100) + '...' : str);
-        if (fieldName === '_id') return '<span class="text-xs font-mono text-blue-600 bg-blue-50/30">' + escaped + '</span>';
-        return '<span class="text-sm text-slate-700">' + escaped + '</span>';
+        if (fieldName === '_id') return '<span class="text-xs font-mono text-blue-600 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-900/40">' + escaped + '</span>';
+        return '<span class="text-sm text-slate-700 dark:text-gray-200">' + escaped + '</span>';
     }
 
     function displayData(data) {
         const container = document.getElementById('data-content');
         if (data.length === 0) {
-            container.innerHTML = '<div class="flex-1 flex items-center justify-center min-h-0"><p class="text-gray-400 text-sm">ไม่มีข้อมูลใน collection นี้</p></div>';
+            container.innerHTML = '<div class="flex-1 flex items-center justify-center min-h-0"><p class="text-gray-400 dark:text-gray-500 text-sm">ไม่มีข้อมูลใน collection นี้</p></div>';
             setHeaderStats(0);
             document.getElementById('delete-btn').style.display = 'none';
             return;
@@ -150,7 +152,7 @@
         document.getElementById('delete-btn').style.display = 'inline-block';
 
         const fields = Object.keys(data[0]);
-        const theadRow = '<tr class="bg-gray-50/50 text-[11px] uppercase tracking-wider text-gray-400 border-b border-gray-100">' +
+        const theadRow = '<tr class="bg-gray-50/50 dark:bg-gray-700/50 text-[11px] uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-600">' +
             fields.map(f => '<th class="px-6 py-4 font-bold">' + escapeHtml(f) + '</th>').join('') + '</tr>';
         const rows = data.map(doc => {
             const docId = doc._id != null ? String(doc._id) : '';
@@ -161,18 +163,18 @@
 
         const n = data.length;
         const footerLeft = 'แสดง 1–' + n + ' ของ ' + n + ' เอกสาร';
-        const footerRight = '<button type="button" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-blue-600 text-white shadow-sm text-xs">1</button>';
+        const footerRight = '<button type="button" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-600 bg-blue-600 text-white shadow-sm text-xs">1</button>';
 
         container.innerHTML = `
             <div class="flex-1 overflow-auto data-scrollbar p-6 min-h-0">
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-w-max">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm overflow-hidden min-w-max">
                     <table class="w-full text-left border-collapse">
                         <thead>${theadRow}</thead>
-                        <tbody class="divide-y divide-gray-50">${rows}</tbody>
+                        <tbody class="divide-y divide-gray-50 dark:divide-gray-600">${rows}</tbody>
                     </table>
                 </div>
             </div>
-            <footer class="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-between text-xs text-gray-500 flex-shrink-0">
+            <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
                 <div>${escapeHtml(footerLeft)}</div>
                 <div class="flex gap-1">${footerRight}</div>
             </footer>
@@ -220,11 +222,11 @@
             if (sortDesc) {
                 btn.innerHTML = '<i class="fas fa-sort-amount-up"></i> A → Z';
                 btn.title = 'เรียงเก่าสุด → ใหม่สุด (คลิกเพื่อสลับกลับ)';
-                btn.className = 'px-5 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-200 transition flex items-center gap-2';
+                btn.className = 'px-5 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center gap-2';
             } else {
                 btn.innerHTML = '<i class="fas fa-sort-amount-down"></i> Z → A';
                 btn.title = 'เรียงใหม่สุด → เก่าสุด';
-                btn.className = 'px-5 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition flex items-center gap-2';
+                btn.className = 'px-5 py-2 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2';
             }
         }
         const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;

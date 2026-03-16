@@ -6,22 +6,23 @@
     .mono { font-family: 'JetBrains Mono', monospace; }
     .editor-scrollbar::-webkit-scrollbar { width: 6px; }
     .editor-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    html.dark .editor-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; }
 </style>
 
 <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
-    <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between flex-shrink-0" id="editor-header">
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-4 flex items-center justify-between flex-shrink-0" id="editor-header">
         <div class="flex flex-col">
-            <div class="flex items-center gap-2 text-xs text-gray-400 mb-1" id="editor-breadcrumb"></div>
-            <h2 class="text-xl font-bold text-slate-800">แก้ไข Document</h2>
+            <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mb-1" id="editor-breadcrumb"></div>
+            <h2 class="text-xl font-bold text-slate-800 dark:text-gray-100">แก้ไข Document</h2>
         </div>
         <div class="flex items-center gap-2">
-            <button type="button" class="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition" onclick="sortEditorFields()">
+            <button type="button" class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition" onclick="sortEditorFields()">
                 <i class="fas fa-sort-alpha-down mr-2"></i>A-Z
             </button>
-            <button type="button" class="px-4 py-2 text-sm font-bold bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 rounded-lg transition shadow-sm" id="editor-save-all-btn" onclick="window.saveAllFields && window.saveAllFields()">
-                <i class="fas fa-save mr-2 text-blue-500"></i>บันทึกทั้งหมด
+            <button type="button" class="px-4 py-2 text-sm font-bold bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-slate-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition shadow-sm" id="editor-save-all-btn" onclick="window.saveAllFields && window.saveAllFields()">
+                <i class="fas fa-save mr-2 text-blue-500 dark:text-blue-400"></i>บันทึกทั้งหมด
             </button>
-            <button type="button" class="px-4 py-2 text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition" onclick="closeEditor()">
+            <button type="button" class="px-4 py-2 text-sm font-bold bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition" onclick="closeEditor()">
                 <i class="fas fa-times mr-2"></i>ปิด
             </button>
         </div>
@@ -29,7 +30,7 @@
 
     <div class="flex-1 overflow-y-auto editor-scrollbar p-8 min-h-0" id="editor-fields-container">
         <div class="loading flex items-center justify-center py-12">
-            <div class="text-center text-gray-500">
+            <div class="text-center text-gray-500 dark:text-gray-400">
                 <div class="spinner"></div>
                 <p class="mt-2">กำลังโหลดข้อมูล Document...</p>
             </div>
@@ -70,7 +71,7 @@
         const db = escapeHtml(window.currentDatabase);
         const col = escapeHtml(window.currentCollection);
         const idShort = docId ? escapeHtml(String(docId).substring(0, 12) + (docId.length > 12 ? '...' : '')) : '';
-        el.innerHTML = '<span>' + db + '</span><i class="fas fa-chevron-right text-[8px]"></i><span>' + col + '</span><i class="fas fa-chevron-right text-[8px]"></i><span class="text-blue-500 font-mono">' + idShort + '</span>';
+        el.innerHTML = '<span>' + db + '</span><i class="fas fa-chevron-right text-[8px]"></i><span>' + col + '</span><i class="fas fa-chevron-right text-[8px]"></i><span class="text-blue-500 dark:text-blue-400 font-mono">' + idShort + '</span>';
     }
 
     async function init() {
@@ -109,10 +110,10 @@
 
         let cardInner = '';
         if (docData._id !== undefined) {
-            cardInner += '<div class="bg-gray-50 px-8 py-4 border-b border-gray-100 flex items-center justify-between">';
-            cardInner += '<div class="flex items-center gap-3"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Object ID</span>';
-            cardInner += '<code class="text-sm text-blue-600 font-medium mono bg-blue-50 px-2 py-1 rounded">' + idEscaped + '</code></div>';
-            cardInner += '<i class="fas fa-lock text-gray-300 text-xs"></i></div>';
+            cardInner += '<div class="bg-gray-50 dark:bg-gray-700/50 px-8 py-4 border-b border-gray-100 dark:border-gray-600 flex items-center justify-between">';
+            cardInner += '<div class="flex items-center gap-3"><span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">Object ID</span>';
+            cardInner += '<code class="text-sm text-blue-600 dark:text-blue-400 font-medium mono bg-blue-50 dark:bg-blue-900/40 px-2 py-1 rounded">' + idEscaped + '</code></div>';
+            cardInner += '<i class="fas fa-lock text-gray-300 dark:text-gray-500 text-xs"></i></div>';
         }
 
         const keys = Object.keys(docData).filter(k => k !== '_id');
@@ -124,14 +125,14 @@
             const safeKey = safeIdKey(key);
             const isMultiline = (typeof value === 'object' && value !== null) || valueStr.length > 80;
             const isNumber = typeof value === 'number';
-            const rowClass = isMultiline ? 'flex items-start px-8 py-4 hover:bg-gray-50/50 transition group' : 'flex items-center px-8 py-4 hover:bg-gray-50/50 transition group';
-            const labelClass = isMultiline ? 'w-1/4 text-sm font-semibold text-slate-500 pt-2 group-hover:text-blue-600 transition' : 'w-1/4 text-sm font-semibold text-slate-500 group-hover:text-blue-600 transition';
-            const inputClass = 'flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition';
-            const btnClass = 'opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-md uppercase';
+            const rowClass = isMultiline ? 'flex items-start px-8 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition group' : 'flex items-center px-8 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition group';
+            const labelClass = isMultiline ? 'w-1/4 text-sm font-semibold text-slate-500 dark:text-gray-400 pt-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition' : 'w-1/4 text-sm font-semibold text-slate-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition';
+            const inputClass = 'flex-1 p-2 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm mono transition text-gray-900 dark:text-gray-200';
+            const btnClass = 'opacity-0 group-hover:opacity-100 transition px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 rounded-md uppercase';
             const btnExtra = isMultiline ? ' mt-2' : '';
 
             let typeBadge = '';
-            if (isNumber) typeBadge = '<span class="text-[10px] text-gray-300 font-bold uppercase tracking-tighter">Number</span>';
+            if (isNumber) typeBadge = '<span class="text-[10px] text-gray-300 dark:text-gray-500 font-bold uppercase tracking-tighter">Number</span>';
 
             let inputEl;
             if (isMultiline) {
@@ -149,9 +150,9 @@
                 '<div class="' + valueWrapClass + '">' + inputEl + typeBadge + updateBtn + '</div></div>';
         }).join('');
 
-        cardInner += '<div class="divide-y divide-gray-50">' + fieldRows + '</div>';
+        cardInner += '<div class="divide-y divide-gray-50 dark:divide-gray-600">' + fieldRows + '</div>';
 
-        container.innerHTML = '<div class="max-w-4xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">' + cardInner + '</div>';
+        container.innerHTML = '<div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm overflow-hidden">' + cardInner + '</div>';
     }
 
     window._editorUpdateField = async function (btnElement) {
@@ -176,10 +177,10 @@
             if (result.success) {
                 try { currentDocumentData[fieldKey] = JSON.parse(valueJsonStr); } catch { currentDocumentData[fieldKey] = rawValue; }
                 btnElement.innerHTML = 'OK';
-                btnElement.classList.add('bg-green-100', 'text-green-700');
+                btnElement.classList.add('bg-green-100', 'dark:bg-green-900/40', 'text-green-700', 'dark:text-green-300');
                 setTimeout(function () {
                     btnElement.innerHTML = originalText;
-                    btnElement.classList.remove('bg-green-100', 'text-green-700');
+                    btnElement.classList.remove('bg-green-100', 'dark:bg-green-900/40', 'text-green-700', 'dark:text-green-300');
                     btnElement.disabled = false;
                 }, 1500);
             } else {
