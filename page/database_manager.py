@@ -182,10 +182,11 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'Error: {str(e)}'}
     
-    def get_collection_data(self, database_name: str, collection_name: str, limit: int = 50, 
-                           search_field: str = "", search_operator: str = "", 
+    def get_collection_data(self, database_name: str, collection_name: str, limit: int = 50,
+                           skip: int = 0,
+                           search_field: str = "", search_operator: str = "",
                            search_value: str = "") -> Dict:
-        """Get collection data with optional search"""
+        """Get collection data with optional search and pagination"""
         try:
             if not self.connect():
                 return {'success': False, 'message': 'Could not connect'}
@@ -200,7 +201,9 @@ class MongoDBClient:
                 elif search_operator == "like":
                     query_filter[search_field] = {"$regex": search_value, "$options": "i"}
             
-            documents = list(collection.find(query_filter).limit(limit))
+            total = collection.count_documents(query_filter)
+            cursor = collection.find(query_filter).sort("_id", 1).skip(skip).limit(limit)
+            documents = list(cursor)
             
             # Convert ObjectId to string
             for doc in documents:
@@ -208,7 +211,7 @@ class MongoDBClient:
                     doc['_id'] = str(doc['_id'])
             
             self.disconnect()
-            return {'success': True, 'data': documents}
+            return {'success': True, 'data': documents, 'total': total}
             
         except Exception as e:
             self.disconnect()

@@ -59,6 +59,17 @@
     let currentFields = [];
     let lastLoadedData = [];
     let sortDesc = false;
+    let pageSize = 25;
+    let currentPage = 1;
+    let totalCount = 0;
+    let searchField = '', searchOp = '', searchVal = '';
+
+    function getSearchParams() {
+        const f = document.getElementById('search-field');
+        const o = document.getElementById('search-operator');
+        const v = document.getElementById('search-value');
+        return { field: f ? f.value : '', op: o ? o.value : '', val: v ? v.value : '' };
+    }
 
     function escapeHtml(s) {
         if (s === null || s === undefined) return '';
@@ -97,12 +108,15 @@
         setHeaderStats('');
         document.getElementById('search-form').style.display = 'none';
         document.getElementById('delete-btn').style.display = 'none';
-
-        await loadData(50);
+        currentPage = 1;
+        await loadData(pageSize, 0);
         await loadCollectionFields(window.currentCollection);
     }
 
-    async function loadData(limit, searchField = '', searchOp = '', searchVal = '') {
+    async function loadData(limit, skip, searchFieldParam, searchOpParam, searchValParam) {
+        searchField = searchFieldParam || '';
+        searchOp = searchOpParam || '';
+        searchVal = searchValParam || '';
         document.getElementById('data-content').innerHTML = `
             <div class="loading flex items-center justify-center flex-1">
                 <div class="text-center">
@@ -114,12 +128,14 @@
         try {
             const result = await eel.get_collection_data(
                 window.currentConnection.name, window.currentDatabase,
-                window.currentCollection, limit, searchField, searchOp, searchVal
+                window.currentCollection, limit, skip, searchField, searchOp, searchVal
             )();
             if (result.success) {
                 lastLoadedData = result.data;
+                totalCount = result.total !== undefined ? result.total : lastLoadedData.length;
+                currentPage = skip === 0 ? 1 : Math.floor(skip / pageSize) + 1;
                 const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;
-                displayData(toShow);
+                displayData(toShow, totalCount, currentPage, pageSize);
             } else {
                 document.getElementById('data-content').innerHTML = '<div class="flex-1 flex items-center justify-center p-8"><div class="alert alert-danger">' + escapeHtml(result.message) + '</div></div>';
             }
@@ -138,18 +154,29 @@
         return '<span class="text-sm text-slate-700 dark:text-gray-200">' + escaped + '</span>';
     }
 
-    function displayData(data) {
+    function displayData(data, totalCountArg, currentPageArg, pageSizeArg) {
+        const total = totalCountArg !== undefined ? totalCountArg : (data.length || 0);
+        const page = currentPageArg !== undefined ? currentPageArg : 1;
+        const size = pageSizeArg !== undefined ? pageSizeArg : pageSize;
         const container = document.getElementById('data-content');
+        const start = total === 0 ? 0 : (page - 1) * size + 1;
+        const end = total === 0 ? 0 : Math.min((page - 1) * size + data.length, total);
+        const totalPages = size > 0 ? Math.ceil(total / size) : 0;
+
+        setHeaderStats(total);
+        document.getElementById('search-form').style.display = 'block';
+        document.getElementById('delete-btn').style.display = total > 0 ? 'inline-block' : 'none';
+
         if (data.length === 0) {
-            container.innerHTML = '<div class="flex-1 flex items-center justify-center min-h-0"><p class="text-gray-400 dark:text-gray-500 text-sm">No data in this collection</p></div>';
-            setHeaderStats(0);
-            document.getElementById('delete-btn').style.display = 'none';
+            container.innerHTML = `
+                <div class="flex-1 flex items-center justify-center min-h-0"><p class="text-gray-400 dark:text-gray-500 text-sm">No data in this collection</p></div>
+                <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                    <div>Showing 0 of 0 documents</div>
+                    <div class="flex gap-1"></div>
+                </footer>
+            `;
             return;
         }
-
-        setHeaderStats(data.length);
-        document.getElementById('search-form').style.display = 'block';
-        document.getElementById('delete-btn').style.display = 'inline-block';
 
         const fields = Object.keys(data[0]);
         const theadRow = '<tr class="bg-gray-50/50 dark:bg-gray-700/50 text-[11px] uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-600">' +
@@ -161,9 +188,16 @@
                 fields.map(f => '<td class="px-6 py-4">' + formatValue(doc[f], f) + '</td>').join('') + '</tr>';
         }).join('');
 
-        const n = data.length;
-        const footerLeft = 'Showing 1–' + n + ' of ' + n + ' documents';
-        const footerRight = '<button type="button" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-600 bg-blue-600 text-white shadow-sm text-xs">1</button>';
+        const footerLeft = 'Showing ' + start + '–' + end + ' of ' + total + ' documents';
+        const perPageOptions = [10, 25, 50, 100];
+        const perPageSelect = '<select id="data-page-size" class="p-1.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-xs dark:text-gray-200 focus:ring-2 focus:ring-blue-500/20 outline-none" onchange="window._setPageSize(parseInt(this.value, 10))">' +
+            perPageOptions.map(n => '<option value="' + n + '"' + (size === n ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>';
+        const prevDisabled = page <= 1;
+        const nextDisabled = page >= totalPages || totalPages <= 0;
+        const prevBtn = '<button type="button" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent" ' + (prevDisabled ? 'disabled' : 'onclick="window._goToPage(' + (page - 1) + ')"') + '><i class="fas fa-chevron-left"></i></button>';
+        const nextBtn = '<button type="button" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent" ' + (nextDisabled ? 'disabled' : 'onclick="window._goToPage(' + (page + 1) + ')"') + '><i class="fas fa-chevron-right"></i></button>';
+        const pageInfo = '<span class="px-2 text-gray-500 dark:text-gray-400">Page ' + page + ' of ' + (totalPages || 1) + '</span>';
+        const footerRight = '<div class="flex items-center gap-2"><span class="text-gray-500 dark:text-gray-400 text-[11px]">Per page</span>' + perPageSelect + pageInfo + prevBtn + nextBtn + '</div>';
 
         container.innerHTML = `
             <div class="flex-1 overflow-auto data-scrollbar p-6 min-h-0">
@@ -180,6 +214,20 @@
             </footer>
         `;
     }
+
+    window._goToPage = function (pageNum) {
+        currentPage = pageNum;
+        const skip = (currentPage - 1) * pageSize;
+        const p = getSearchParams();
+        loadData(pageSize, skip, p.field, p.op, p.val);
+    };
+
+    window._setPageSize = function (size) {
+        pageSize = size;
+        currentPage = 1;
+        const p = getSearchParams();
+        loadData(pageSize, 0, p.field, p.op, p.val);
+    };
 
     async function loadCollectionFields(collectionName) {
         try {
@@ -201,18 +249,18 @@
     }
 
     window.performSearch = async function () {
-        const field = document.getElementById('search-field').value;
-        const op = document.getElementById('search-operator').value;
-        const val = document.getElementById('search-value').value;
-        if (!field || !op || !val) { window.showAlert('Please fill in all search fields', 'Notice', 'warning'); return; }
-        await loadData(50, field, op, val);
+        const p = getSearchParams();
+        if (!p.field || !p.op || !p.val) { window.showAlert('Please fill in all search fields', 'Notice', 'warning'); return; }
+        currentPage = 1;
+        await loadData(pageSize, 0, p.field, p.op, p.val);
     };
 
     window.clearSearch = async function () {
         document.getElementById('search-field').value = '';
         document.getElementById('search-operator').value = '';
         document.getElementById('search-value').value = '';
-        await loadData(50);
+        currentPage = 1;
+        await loadData(pageSize, 0);
     };
 
     window.toggleSort = function () {
@@ -230,7 +278,7 @@
             }
         }
         const toShow = sortDesc ? [...lastLoadedData].reverse() : lastLoadedData;
-        displayData(toShow);
+        displayData(toShow, totalCount, currentPage, pageSize);
     };
 
     window._editDocument = function (documentId) {
@@ -261,7 +309,9 @@
             if (result.success) {
                 window.showAlert(result.message, 'Success', 'success');
                 window._hideDeleteModal();
-                await loadData(50);
+                currentPage = 1;
+                const p = getSearchParams();
+                await loadData(pageSize, 0, p.field, p.op, p.val);
             } else {
                 window.showAlert(result.message, 'Error', 'error');
             }

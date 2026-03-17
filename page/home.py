@@ -119,9 +119,10 @@ def get_collections(connection_name: str, database_name: str):
 
 
 @eel.expose
-def get_collection_data(connection_name: str, database_name: str, collection_name: str, limit: int = 50, 
+def get_collection_data(connection_name: str, database_name: str, collection_name: str, limit: int = 50,
+                        skip: int = 0,
                         search_field: str = "", search_operator: str = "", search_value: str = ""):
-    """Get collection data with optional search"""
+    """Get collection data with optional search and pagination"""
     try:
         connection = connection_manager.get_connection(connection_name)
         
@@ -129,7 +130,7 @@ def get_collection_data(connection_name: str, database_name: str, collection_nam
             return {'success': False, 'message': 'Connection not found'}
         
         client = MongoDBClient(connection)
-        return client.get_collection_data(database_name, collection_name, limit, search_field, search_operator, search_value)
+        return client.get_collection_data(database_name, collection_name, limit, skip, search_field, search_operator, search_value)
         
     except Exception as e:
         return {'success': False, 'message': f'Error: {str(e)}'}
