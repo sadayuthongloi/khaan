@@ -320,7 +320,7 @@
                 var statusBadge = '<span class="bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-wider">Idle</span>';
                 var iconBg = 'bg-blue-50 dark:bg-blue-900/40';
                 var iconColor = 'text-blue-600 dark:text-blue-400';
-                var userLine = conn.username ? '<p><i class="fas fa-user mr-2"></i> User: ' + escapeHtml(conn.username) + '</p>' : '';
+                var userLine = '<p><i class="fas fa-user mr-2"></i> User : ' + (conn.username ? escapeHtml(conn.username) : '') + '</p>';
                 return '<div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-600 shadow-sm hover:shadow-md transition group card-connection" data-connection-name="' + nameAttr + '">' +
                     '<div class="flex justify-between items-start mb-4">' +
                     '<div class="p-3 ' + iconBg + ' rounded-xl group-hover:opacity-90 transition">' +
