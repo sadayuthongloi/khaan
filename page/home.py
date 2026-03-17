@@ -13,7 +13,17 @@ connection_manager = MongoDBConnectionManager()
 @eel.expose
 def get_connections():
     """Return all connections to JavaScript"""
-    return connection_manager.connections
+    # Do not expose usernames/passwords to the UI
+    sanitized = []
+    for conn in connection_manager.connections:
+        if not isinstance(conn, dict):
+            sanitized.append(conn)
+            continue
+        public_conn = dict(conn)
+        public_conn.pop("username", None)
+        public_conn.pop("password", None)
+        sanitized.append(public_conn)
+    return sanitized
 
 
 @eel.expose
