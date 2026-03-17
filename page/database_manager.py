@@ -334,6 +334,38 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'Error: {str(e)}'}
 
+    def unset_document_field(self, database_name: str, collection_name: str, document_id: str, field_key: str) -> Dict:
+        """Remove a single field from document using $unset"""
+        from bson.objectid import ObjectId
+
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'Could not connect'}
+
+            db = self.client[database_name]
+            collection = db[collection_name]
+
+            try:
+                query_id = ObjectId(document_id)
+            except Exception:
+                query_id = document_id
+
+            result = collection.update_one(
+                {"_id": query_id},
+                {"$unset": {field_key: ""}}
+            )
+
+            self.disconnect()
+
+            if result.matched_count == 0:
+                return {'success': False, 'message': 'Document not found for unset'}
+
+            return {'success': True, 'message': f'Field "{field_key}" removed successfully'}
+
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'Error: {str(e)}'}
+
     def clear_collection(self, database_name: str, collection_name: str, confirm_collection_name: str) -> Dict:
         """Clear all data in collection"""
         try:

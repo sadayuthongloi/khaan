@@ -180,6 +180,21 @@ def update_document_field(connection_name: str, database_name: str, collection_n
 
 
 @eel.expose
+def unset_document_field(connection_name: str, database_name: str, collection_name: str, document_id: str, field_key: str):
+    """Remove single field from document"""
+    try:
+        connection = connection_manager.get_connection(connection_name)
+        if not connection:
+            return {'success': False, 'message': 'Connection not found'}
+
+        client = MongoDBClient(connection)
+        return client.unset_document_field(database_name, collection_name, document_id, field_key)
+
+    except Exception as e:
+        return {'success': False, 'message': f'Error: {str(e)}'}
+
+
+@eel.expose
 def get_collection_fields(connection_name: str, database_name: str, collection_name: str):
     """Get list of fields in collection"""
     try:
