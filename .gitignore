@@ -201,6 +201,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local encryption key (do not commit)
+**/key.local
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

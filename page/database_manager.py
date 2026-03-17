@@ -9,13 +9,42 @@ import urllib.parse
 from typing import Dict, List, Optional
 from pymongo import MongoClient
 
+from crypto_config import maybe_decrypt_field, maybe_encrypt_field, derive_fernet_key
+
 
 class MongoDBConnectionManager:
     """Manage MongoDB connections"""
     
     def __init__(self, config_file: str = 'config.json'):
         self.config_file = config_file
+        self._fernet_key = self._load_fernet_key()
         self.connections = self.load_connections()
+
+    def _load_fernet_key(self) -> Optional[bytes]:
+        """
+        Key source priority:
+        1) KHAA_N_KEY_WORDING env var
+        2) key.local file (same directory as config.json, or current working directory for relative paths)
+        """
+        try:
+            env_wording = os.environ.get("KHAA_N_KEY_WORDING", "").strip()
+            if env_wording:
+                return derive_fernet_key(env_wording)
+
+            config_abs = os.path.abspath(self.config_file)
+            config_dir = os.path.dirname(config_abs)
+            key_file = os.path.join(config_dir, "key.local")
+
+            if os.path.exists(key_file):
+                with open(key_file, "r", encoding="utf-8") as f:
+                    key_wording = f.read().strip()
+                if key_wording:
+                    return derive_fernet_key(key_wording)
+
+            return None
+        except Exception as e:
+            print(f"Error loading encryption key: {e}")
+            return None
     
     def load_connections(self) -> List[Dict]:
         """Load connections from config.json"""
@@ -23,7 +52,29 @@ class MongoDBConnectionManager:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    return data.get('connections', [])
+                    connections = data.get('connections', [])
+                    if not self._fernet_key:
+                        has_encrypted = any(
+                            isinstance(conn, dict)
+                            and (
+                                (isinstance(conn.get("username"), str) and conn.get("username", "").startswith("ENC:"))
+                                or (isinstance(conn.get("password"), str) and conn.get("password", "").startswith("ENC:"))
+                            )
+                            for conn in connections
+                        )
+                        if has_encrypted:
+                            print(
+                                "Warning: Encrypted fields found in config.json but no key was provided "
+                                "(set KHAA_N_KEY_WORDING or create key.local)."
+                            )
+                    # Decrypt sensitive fields if possible (backward-compatible with plaintext)
+                    for conn in connections:
+                        if isinstance(conn, dict):
+                            if 'username' in conn:
+                                conn['username'] = maybe_decrypt_field(conn.get('username', ''), self._fernet_key)
+                            if 'password' in conn:
+                                conn['password'] = maybe_decrypt_field(conn.get('password', ''), self._fernet_key)
+                    return connections
             return []
         except Exception as e:
             print(f"Error loading config: {e}")
@@ -32,8 +83,21 @@ class MongoDBConnectionManager:
     def save_connections(self) -> bool:
         """Save connections to config.json"""
         try:
+            # Write encrypted values to disk but keep in-memory values as plaintext
+            serialized_connections: List[Dict] = []
+            for conn in self.connections:
+                if not isinstance(conn, dict):
+                    serialized_connections.append(conn)
+                    continue
+                disk_conn = dict(conn)
+                if 'username' in disk_conn:
+                    disk_conn['username'] = maybe_encrypt_field(disk_conn.get('username', ''), self._fernet_key)
+                if 'password' in disk_conn:
+                    disk_conn['password'] = maybe_encrypt_field(disk_conn.get('password', ''), self._fernet_key)
+                serialized_connections.append(disk_conn)
+
             config_data = {
-                'connections': self.connections
+                'connections': serialized_connections
             }
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(config_data, f, indent=2, ensure_ascii=False)
