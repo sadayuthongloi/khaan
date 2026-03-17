@@ -1,3 +1,12 @@
+import os
+import sys
+
+# PyInstaller --windowed sets stdout/stderr to None; Bottle (used by eel) expects .write()
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w", encoding="utf-8")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
 import eel
 from database_manager import MongoDBConnectionManager, MongoDBClient
 

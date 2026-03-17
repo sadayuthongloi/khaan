@@ -5,6 +5,7 @@ Manage connections and operations with MongoDB.
 
 import json
 import os
+import sys
 import urllib.parse
 from typing import Dict, List, Optional
 from pymongo import MongoClient
@@ -16,9 +17,22 @@ class MongoDBConnectionManager:
     """Manage MongoDB connections"""
     
     def __init__(self, config_file: str = 'config.json'):
-        self.config_file = config_file
+        self.config_file = self._resolve_config_path(config_file)
         self._fernet_key = self._load_fernet_key()
         self.connections = self.load_connections()
+
+    def _resolve_config_path(self, config_file: str) -> str:
+        """
+        Make config/key lookup robust for PyInstaller onefile:
+        - If `config_file` is relative, resolve it next to the running app (exe) or this module.
+        """
+        if os.path.isabs(config_file):
+            return config_file
+        if getattr(sys, "frozen", False):
+            base_dir = os.path.dirname(sys.executable)
+        else:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, config_file)
 
     def _load_fernet_key(self) -> Optional[bytes]:
         """
