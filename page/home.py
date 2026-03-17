@@ -366,7 +366,7 @@ def main():
     print("Open browser at: http://localhost:8000")
 
     try:
-        eel.start('index.html', size=(1200, 800), port=8000)
+        eel.start('index.html', size=(1200, 800), port=8000, disable_cache=True)
     except (SystemExit, MemoryError, KeyboardInterrupt):
         print("Closing application...")
 
