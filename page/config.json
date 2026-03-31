@@ -9,11 +9,11 @@
       "password": "ENC:gAAAAABpuWoc_RF2WvmuTcLnihHlb8uH3Kd55P6udG9MvmK1uCeZ6dn5RMrZNG-RJRuF3QmIW__04fEoWhA6aCOfVWsQKAb6JItbh_fCwI-3wpg0gS3sPK8="
     },
     {
-      "name": "moss",
+      "name": "medica",
       "host": "localhost",
       "port": 27017,
-      "username": "",
-      "password": ""
+      "username": "medica",
+      "password": "@C0mprehensive฿rep0rting"
     }
   ]
 }

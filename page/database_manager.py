@@ -469,6 +469,28 @@ class MongoDBClient:
             self.disconnect()
             return {'success': False, 'message': f'Error: {str(e)}'}
     
+    def create_database(self, database_name: str, collection_name: str) -> Dict:
+        """Create a new database by creating an initial collection"""
+        try:
+            if not self.connect():
+                return {'success': False, 'message': 'Could not connect'}
+            
+            db = self.client[database_name]
+            # Check if database exists
+            if database_name in self.client.list_database_names():
+                if collection_name in db.list_collection_names():
+                    self.disconnect()
+                    return {'success': False, 'message': f'Collection "{collection_name}" already exists in database "{database_name}"'}
+            
+            db.create_collection(collection_name)
+            
+            self.disconnect()
+            return {'success': True, 'message': f'Database "{database_name}" created with collection "{collection_name}"'}
+            
+        except Exception as e:
+            self.disconnect()
+            return {'success': False, 'message': f'Error: {str(e)}'}
+
     def drop_collections(self, database_name: str, collection_names: List[str]) -> Dict:
         """Drop selected collections"""
         try:

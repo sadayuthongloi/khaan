@@ -259,8 +259,11 @@
                     <button type="button" class="text-gray-400 hover:text-red-500 transition p-1" onclick="goBack()" title="Back"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
-            <div class="p-4 bg-gray-50/50 dark:bg-gray-700/30">
+            <div class="p-4 bg-gray-50/50 dark:bg-gray-700/30 flex justify-between items-center">
                 <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Database</span>
+                <button type="button" class="text-gray-400 hover:text-blue-500 transition" onclick="window._showAddDatabaseModal && window._showAddDatabaseModal()" title="Add Database">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
             <nav class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1 min-h-0" id="databases-container">
                 <div class="loading py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
@@ -346,6 +349,26 @@
             <div class="generic-modal-actions">
                 <button class="btn btn-danger" id="confirm-modal-yes">Confirm</button>
                 <button class="btn btn-secondary" id="confirm-modal-no">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Database Modal -->
+    <div class="generic-modal" id="add-db-modal">
+        <div class="generic-modal-content">
+            <div class="generic-modal-header">
+                <div class="generic-modal-title">➕ Add Database</div>
+            </div>
+            <div class="delete-modal-form" style="margin-bottom: 20px;">
+                <label for="new-db-name">Database Name:</label>
+                <input type="text" id="new-db-name" placeholder="Enter new database name" style="margin-bottom: 15px;">
+                <label for="new-col-name">Initial Collection Name:</label>
+                <input type="text" id="new-col-name" placeholder="Enter initial collection name" value="init">
+                <p style="font-size: 11px; color: #888; margin-top: 5px;">* MongoDB requires at least one collection to create a database.</p>
+            </div>
+            <div class="generic-modal-actions">
+                <button class="btn btn-primary" onclick="submitAddDatabase()">Add Database</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('add-db-modal').classList.remove('show')">Cancel</button>
             </div>
         </div>
     </div>
@@ -512,6 +535,49 @@
                 yesBtn.addEventListener('click', onYes);
                 noBtn.addEventListener('click', onNo);
             });
+        };
+
+        // ========== Add Database ==========
+        window._showAddDatabaseModal = function() {
+            document.getElementById('new-db-name').value = '';
+            document.getElementById('new-col-name').value = 'init';
+            document.getElementById('add-db-modal').classList.add('show');
+            setTimeout(() => document.getElementById('new-db-name').focus(), 100);
+        };
+
+        window.submitAddDatabase = async function() {
+            const dbName = document.getElementById('new-db-name').value.trim();
+            const colName = document.getElementById('new-col-name').value.trim();
+            
+            if (!dbName) {
+                showAlert('Please enter a database name', 'Validation Error', 'error');
+                return;
+            }
+            if (!colName) {
+                showAlert('Please enter a collection name', 'Validation Error', 'error');
+                return;
+            }
+            
+            const btn = document.querySelector('#add-db-modal .btn-primary');
+            const originalText = btn.textContent;
+            btn.textContent = 'Creating...';
+            btn.disabled = true;
+            
+            try {
+                const result = await eel.create_database(window.currentConnection.name, dbName, colName)();
+                if (result.success) {
+                    document.getElementById('add-db-modal').classList.remove('show');
+                    await loadDatabases(); // reload sidebar
+                    showAlert(result.message, 'Success', 'success');
+                } else {
+                    showAlert(result.message, 'Error', 'error');
+                }
+            } catch (e) {
+                showAlert('Failed to create database: ' + e, 'Error', 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         };
 
         // ========== Init ==========

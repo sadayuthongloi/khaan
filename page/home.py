@@ -230,6 +230,21 @@ def get_collection_fields(connection_name: str, database_name: str, collection_n
 
 
 
+@eel.expose
+def create_database(connection_name: str, database_name: str, collection_name: str):
+    """Create a new database wrapper"""
+    try:
+        connection = connection_manager.get_connection(connection_name)
+        
+        if not connection:
+            return {'success': False, 'message': 'Connection not found'}
+        
+        client = MongoDBClient(connection)
+        return client.create_database(database_name, collection_name)
+        
+    except Exception as e:
+        return {'success': False, 'message': f'Error: {str(e)}'}
+
 
 @eel.expose
 def clear_collection(connection_name: str, database_name: str, collection_name: str, confirm_collection_name: str):
