@@ -55,7 +55,8 @@ class MongoDBConnectionManager:
                 if key_wording:
                     return derive_fernet_key(key_wording)
 
-            return None
+            # Fallback to a default key if neither env var nor file exists
+            return derive_fernet_key("DEFAULT_KHAA_N_SECURE_WORDING")
         except Exception as e:
             print(f"Error loading encryption key: {e}")
             return None
